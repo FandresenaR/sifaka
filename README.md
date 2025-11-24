@@ -79,7 +79,7 @@ sifaka/
 - 🚀 **Monorepo**: Efficient build system with TurboRepo.
 - 🛠 **Backend**: Robust NestJS architecture with Prisma & TypeORM support.
 - 🎨 **Frontend**: Modern Next.js App Router with Tailwind CSS.
-- 🌍 **Multi-Tenancy**: "Projects" module to manage multiple sites (e.g., Shuffle Life).
+- 🌍 **Multi-Tenancy**: "Projects" module to manage multiple sites.
 - 🔌 **Database Agnostic**: Connect to Neon, Supabase, or any Postgres DB.
 
 ## Contributing
