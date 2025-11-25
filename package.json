@@ -16,5 +16,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "glob": "^10.0.0",
+    "inflight": "^2.0.0"
+  }
 }

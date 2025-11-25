@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Sifaka CRM - Prisma Schema
+// Database: Supabase PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
@@ -12,4 +9,257 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatar        String?
+  role          UserRole  @default(USER)
+  supabaseId    String?   @unique // Link to Supabase Auth user
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  projects      ProjectMember[]
+  tasksCreated  Task[]          @relation("TaskCreator")
+  tasksAssigned Task[]          @relation("TaskAssignee")
+  comments      TaskComment[]
+  clients       Client[]
+  activities    Activity[]
+
+  @@index([email])
+  @@index([supabaseId])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MANAGER
+  CLIENT
+}
+
+// ============================================
+// PROJECTS
+// ============================================
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  color       String?       // Hex color for UI
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Float?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  members     ProjectMember[]
+  tasks       Task[]
+  clients     Client[]
+  activities  Activity[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// ============================================
+// TASKS
+// ============================================
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  projectId   String
+  createdById String
+  assigneeId  String?
+  dueDate     DateTime?
+  startDate   DateTime?
+  estimatedHours Float?
+  actualHours    Float?
+  tags        String[]   @default([])
+  order       Int        @default(0) // For Kanban ordering
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  completedAt DateTime?
+  
+  // Relations
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy   User            @relation("TaskCreator", fields: [createdById], references: [id])
+  assignee    User?           @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  comments    TaskComment[]
+  attachments TaskAttachment[]
+  activities  Activity[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@index([assigneeId])
+  @@index([createdById])
+  @@index([dueDate])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  BLOCKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================
+// TASK COMMENTS
+// ============================================
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+// ============================================
+// TASK ATTACHMENTS
+// ============================================
+
+model TaskAttachment {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mimeType  String
+  size      Int
+  taskId    String
+  createdAt DateTime @default(now())
+  
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+// ============================================
+// CLIENTS (CRM)
+// ============================================
+
+model Client {
+  id          String       @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  company     String?
+  position    String?
+  address     String?
+  city        String?
+  country     String?
+  website     String?
+  notes       String?
+  status      ClientStatus @default(ACTIVE)
+  projectId   String?
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  project     Project?     @relation(fields: [projectId], references: [id])
+  createdBy   User         @relation(fields: [createdById], references: [id])
+
+  @@index([email])
+  @@index([projectId])
+  @@index([status])
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  LEAD
+  PROSPECT
+}
+
+// ============================================
+// ACTIVITY LOG
+// ============================================
+
+model Activity {
+  id         String       @id @default(cuid())
+  type       ActivityType
+  entityType String       // "task", "project", "client"
+  entityId   String
+  description String
+  metadata   Json?
+  userId     String?
+  projectId  String?
+  taskId     String?
+  createdAt  DateTime     @default(now())
+  
+  user       User?        @relation(fields: [userId], references: [id])
+  project    Project?     @relation(fields: [projectId], references: [id])
+  task       Task?        @relation(fields: [taskId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  CREATED
+  UPDATED
+  DELETED
+  COMMENTED
+  ASSIGNED
+  STATUS_CHANGED
+  COMPLETED
 }
