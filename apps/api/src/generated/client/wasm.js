@@ -93,9 +93,197 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  avatar: 'avatar',
+  role: 'role',
+  supabaseId: 'supabaseId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  status: 'status',
+  color: 'color',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  budget: 'budget',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectMemberScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  userId: 'userId',
+  role: 'role',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TaskScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  priority: 'priority',
+  projectId: 'projectId',
+  createdById: 'createdById',
+  assigneeId: 'assigneeId',
+  dueDate: 'dueDate',
+  startDate: 'startDate',
+  estimatedHours: 'estimatedHours',
+  actualHours: 'actualHours',
+  tags: 'tags',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.TaskCommentScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  taskId: 'taskId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TaskAttachmentScalarFieldEnum = {
+  id: 'id',
+  filename: 'filename',
+  url: 'url',
+  mimeType: 'mimeType',
+  size: 'size',
+  taskId: 'taskId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ClientScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  company: 'company',
+  position: 'position',
+  address: 'address',
+  city: 'city',
+  country: 'country',
+  website: 'website',
+  notes: 'notes',
+  status: 'status',
+  projectId: 'projectId',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ActivityScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  description: 'description',
+  metadata: 'metadata',
+  userId: 'userId',
+  projectId: 'projectId',
+  taskId: 'taskId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.UserRole = exports.$Enums.UserRole = {
+  USER: 'USER',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  CLIENT: 'CLIENT'
+};
+
+exports.ProjectStatus = exports.$Enums.ProjectStatus = {
+  ACTIVE: 'ACTIVE',
+  ON_HOLD: 'ON_HOLD',
+  COMPLETED: 'COMPLETED',
+  ARCHIVED: 'ARCHIVED'
+};
+
+exports.MemberRole = exports.$Enums.MemberRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER',
+  VIEWER: 'VIEWER'
+};
+
+exports.TaskStatus = exports.$Enums.TaskStatus = {
+  TODO: 'TODO',
+  IN_PROGRESS: 'IN_PROGRESS',
+  IN_REVIEW: 'IN_REVIEW',
+  DONE: 'DONE',
+  BLOCKED: 'BLOCKED'
+};
+
+exports.Priority = exports.$Enums.Priority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+};
+
+exports.ClientStatus = exports.$Enums.ClientStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  LEAD: 'LEAD',
+  PROSPECT: 'PROSPECT'
+};
+
+exports.ActivityType = exports.$Enums.ActivityType = {
+  CREATED: 'CREATED',
+  UPDATED: 'UPDATED',
+  DELETED: 'DELETED',
+  COMMENTED: 'COMMENTED',
+  ASSIGNED: 'ASSIGNED',
+  STATUS_CHANGED: 'STATUS_CHANGED',
+  COMPLETED: 'COMPLETED'
+};
 
 exports.Prisma.ModelName = {
-
+  User: 'User',
+  Project: 'Project',
+  ProjectMember: 'ProjectMember',
+  Task: 'Task',
+  TaskComment: 'TaskComment',
+  TaskAttachment: 'TaskAttachment',
+  Client: 'Client',
+  Activity: 'Activity'
 };
 /**
  * Create the Client
@@ -108,7 +296,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "I:\\Projets\\sifaka\\apps\\api\\src\\generated\\client",
+      "value": "/home/twain/Project/sifaka/apps/api/src/generated/client",
       "fromEnvVar": null
     },
     "config": {
@@ -117,16 +305,16 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "I:\\Projets\\sifaka\\apps\\api\\prisma\\schema.prisma",
+    "sourceFilePath": "/home/twain/Project/sifaka/apps/api/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
@@ -145,13 +333,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n",
-  "inlineSchemaHash": "62ed7bc5d0d8b73864ad6e9f48ba1c4d08a51715beb98c3e8967dad2917ad9b2",
+  "inlineSchema": "// Sifaka CRM - Prisma Schema\n// Database: Supabase PostgreSQL\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/client\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ============================================\n// USER & AUTHENTICATION\n// ============================================\n\nmodel User {\n  id         String   @id @default(cuid())\n  email      String   @unique\n  name       String?\n  avatar     String?\n  role       UserRole @default(USER)\n  supabaseId String?  @unique // Link to Supabase Auth user\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n\n  // Relations\n  projects      ProjectMember[]\n  tasksCreated  Task[]          @relation(\"TaskCreator\")\n  tasksAssigned Task[]          @relation(\"TaskAssignee\")\n  comments      TaskComment[]\n  clients       Client[]\n  activities    Activity[]\n\n  @@index([email])\n  @@index([supabaseId])\n}\n\nenum UserRole {\n  USER\n  ADMIN\n  MANAGER\n  CLIENT\n}\n\n// ============================================\n// PROJECTS\n// ============================================\n\nmodel Project {\n  id          String        @id @default(cuid())\n  name        String\n  slug        String        @unique\n  description String?\n  status      ProjectStatus @default(ACTIVE)\n  color       String? // Hex color for UI\n  startDate   DateTime?\n  endDate     DateTime?\n  budget      Float?\n  createdAt   DateTime      @default(now())\n  updatedAt   DateTime      @updatedAt\n\n  // Relations\n  members    ProjectMember[]\n  tasks      Task[]\n  clients    Client[]\n  activities Activity[]\n\n  @@index([slug])\n  @@index([status])\n}\n\nenum ProjectStatus {\n  ACTIVE\n  ON_HOLD\n  COMPLETED\n  ARCHIVED\n}\n\nmodel ProjectMember {\n  id        String     @id @default(cuid())\n  projectId String\n  userId    String\n  role      MemberRole @default(MEMBER)\n  createdAt DateTime   @default(now())\n\n  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([projectId, userId])\n  @@index([projectId])\n  @@index([userId])\n}\n\nenum MemberRole {\n  OWNER\n  ADMIN\n  MEMBER\n  VIEWER\n}\n\n// ============================================\n// TASKS\n// ============================================\n\nmodel Task {\n  id             String     @id @default(cuid())\n  title          String\n  description    String?\n  status         TaskStatus @default(TODO)\n  priority       Priority   @default(MEDIUM)\n  projectId      String\n  createdById    String\n  assigneeId     String?\n  dueDate        DateTime?\n  startDate      DateTime?\n  estimatedHours Float?\n  actualHours    Float?\n  tags           String[]   @default([])\n  order          Int        @default(0) // For Kanban ordering\n  createdAt      DateTime   @default(now())\n  updatedAt      DateTime   @updatedAt\n  completedAt    DateTime?\n\n  // Relations\n  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  createdBy   User             @relation(\"TaskCreator\", fields: [createdById], references: [id])\n  assignee    User?            @relation(\"TaskAssignee\", fields: [assigneeId], references: [id])\n  comments    TaskComment[]\n  attachments TaskAttachment[]\n  activities  Activity[]\n\n  @@index([projectId])\n  @@index([status])\n  @@index([priority])\n  @@index([assigneeId])\n  @@index([createdById])\n  @@index([dueDate])\n}\n\nenum TaskStatus {\n  TODO\n  IN_PROGRESS\n  IN_REVIEW\n  DONE\n  BLOCKED\n}\n\nenum Priority {\n  LOW\n  MEDIUM\n  HIGH\n  URGENT\n}\n\n// ============================================\n// TASK COMMENTS\n// ============================================\n\nmodel TaskComment {\n  id        String   @id @default(cuid())\n  content   String\n  taskId    String\n  userId    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@index([taskId])\n  @@index([userId])\n}\n\n// ============================================\n// TASK ATTACHMENTS\n// ============================================\n\nmodel TaskAttachment {\n  id        String   @id @default(cuid())\n  filename  String\n  url       String\n  mimeType  String\n  size      Int\n  taskId    String\n  createdAt DateTime @default(now())\n\n  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)\n\n  @@index([taskId])\n}\n\n// ============================================\n// CLIENTS (CRM)\n// ============================================\n\nmodel Client {\n  id          String       @id @default(cuid())\n  name        String\n  email       String?\n  phone       String?\n  company     String?\n  position    String?\n  address     String?\n  city        String?\n  country     String?\n  website     String?\n  notes       String?\n  status      ClientStatus @default(ACTIVE)\n  projectId   String?\n  createdById String\n  createdAt   DateTime     @default(now())\n  updatedAt   DateTime     @updatedAt\n\n  project   Project? @relation(fields: [projectId], references: [id])\n  createdBy User     @relation(fields: [createdById], references: [id])\n\n  @@index([email])\n  @@index([projectId])\n  @@index([status])\n}\n\nenum ClientStatus {\n  ACTIVE\n  INACTIVE\n  LEAD\n  PROSPECT\n}\n\n// ============================================\n// ACTIVITY LOG\n// ============================================\n\nmodel Activity {\n  id          String       @id @default(cuid())\n  type        ActivityType\n  entityType  String // \"task\", \"project\", \"client\"\n  entityId    String\n  description String\n  metadata    Json?\n  userId      String?\n  projectId   String?\n  taskId      String?\n  createdAt   DateTime     @default(now())\n\n  user    User?    @relation(fields: [userId], references: [id])\n  project Project? @relation(fields: [projectId], references: [id])\n  task    Task?    @relation(fields: [taskId], references: [id])\n\n  @@index([entityType, entityId])\n  @@index([userId])\n  @@index([projectId])\n  @@index([createdAt])\n}\n\nenum ActivityType {\n  CREATED\n  UPDATED\n  DELETED\n  COMMENTED\n  ASSIGNED\n  STATUS_CHANGED\n  COMPLETED\n}\n",
+  "inlineSchemaHash": "857a36bf7c5beb7f747db1d1f592c7caa5f91b81e4388fc1ff49d83c18acd2b4",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"UserRole\"},{\"name\":\"supabaseId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"projects\",\"kind\":\"object\",\"type\":\"ProjectMember\",\"relationName\":\"ProjectMemberToUser\"},{\"name\":\"tasksCreated\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskCreator\"},{\"name\":\"tasksAssigned\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskAssignee\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"TaskComment\",\"relationName\":\"TaskCommentToUser\"},{\"name\":\"clients\",\"kind\":\"object\",\"type\":\"Client\",\"relationName\":\"ClientToUser\"},{\"name\":\"activities\",\"kind\":\"object\",\"type\":\"Activity\",\"relationName\":\"ActivityToUser\"}],\"dbName\":null},\"Project\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"slug\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ProjectStatus\"},{\"name\":\"color\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"budget\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"members\",\"kind\":\"object\",\"type\":\"ProjectMember\",\"relationName\":\"ProjectToProjectMember\"},{\"name\":\"tasks\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"ProjectToTask\"},{\"name\":\"clients\",\"kind\":\"object\",\"type\":\"Client\",\"relationName\":\"ClientToProject\"},{\"name\":\"activities\",\"kind\":\"object\",\"type\":\"Activity\",\"relationName\":\"ActivityToProject\"}],\"dbName\":null},\"ProjectMember\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"MemberRole\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"ProjectToProjectMember\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ProjectMemberToUser\"}],\"dbName\":null},\"Task\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"TaskStatus\"},{\"name\":\"priority\",\"kind\":\"enum\",\"type\":\"Priority\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"assigneeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"dueDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"estimatedHours\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"actualHours\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"tags\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"order\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"completedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"ProjectToTask\"},{\"name\":\"createdBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskCreator\"},{\"name\":\"assignee\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskAssignee\"},{\"name\":\"comments\",\"kind\":\"object\",\"type\":\"TaskComment\",\"relationName\":\"TaskToTaskComment\"},{\"name\":\"attachments\",\"kind\":\"object\",\"type\":\"TaskAttachment\",\"relationName\":\"TaskToTaskAttachment\"},{\"name\":\"activities\",\"kind\":\"object\",\"type\":\"Activity\",\"relationName\":\"ActivityToTask\"}],\"dbName\":null},\"TaskComment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskToTaskComment\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TaskCommentToUser\"}],\"dbName\":null},\"TaskAttachment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"filename\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"mimeType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"size\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"TaskToTaskAttachment\"}],\"dbName\":null},\"Client\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"company\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"position\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"website\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ClientStatus\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdById\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"ClientToProject\"},{\"name\":\"createdBy\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ClientToUser\"}],\"dbName\":null},\"Activity\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ActivityType\"},{\"name\":\"entityType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"entityId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"taskId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ActivityToUser\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"ActivityToProject\"},{\"name\":\"task\",\"kind\":\"object\",\"type\":\"Task\",\"relationName\":\"ActivityToTask\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
