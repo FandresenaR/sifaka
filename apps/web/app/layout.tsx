@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Sifaka CMS - Modular AI-Powered Content Management",
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors antialiased">
         <ThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

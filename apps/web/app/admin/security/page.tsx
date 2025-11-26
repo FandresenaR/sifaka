@@ -1,8 +1,13 @@
 "use client";
 
-import { Shield, Sparkles, Lock } from "lucide-react";
+import { useState } from "react";
+import { Shield, Sparkles, Save, Check, AlertCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function SecurityPage() {
+    const { data: session } = useSession();
+    const isSuperAdmin = session?.user?.role === "SUPER_ADMIN";
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -14,6 +19,13 @@ export default function SecurityPage() {
                     Configuration de la sécurité et des services IA
                 </p>
             </div>
+
+            {!isSuperAdmin && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg flex items-center gap-3 text-yellow-800 dark:text-yellow-200">
+                    <AlertCircle className="w-5 h-5" />
+                    <p>Seul le Super Admin peut modifier ces paramètres.</p>
+                </div>
+            )}
 
             {/* Security Section */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
@@ -35,21 +47,25 @@ export default function SecurityPage() {
                         title="Authentification 2FA"
                         description="Activer la double authentification"
                         enabled={false}
+                        disabled={!isSuperAdmin}
                     />
                     <SettingCard
                         title="Rate Limiting"
                         description="Protection contre les abus"
                         enabled={true}
+                        disabled={!isSuperAdmin}
                     />
                     <SettingCard
                         title="Cloudflare WAF"
                         description="Web Application Firewall"
                         enabled={false}
+                        disabled={!isSuperAdmin}
                     />
                     <SettingCard
                         title="IP Whitelisting"
                         description="Liste blanche d'IPs"
                         enabled={false}
+                        disabled={!isSuperAdmin}
                     />
                 </div>
             </div>
@@ -69,21 +85,27 @@ export default function SecurityPage() {
                         </p>
                     </div>
                 </div>
-                <div className="space-y-4">
-                    <AIProviderCard
+                <div className="space-y-6">
+                    <AIConfigForm
+                        provider="openai"
                         name="OpenAI"
                         description="GPT-4, DALL-E, Embeddings"
-                        configured={false}
+                        defaultModel="gpt-4-turbo-preview"
+                        disabled={!isSuperAdmin}
                     />
-                    <AIProviderCard
+                    <AIConfigForm
+                        provider="claude"
                         name="Anthropic Claude"
                         description="Claude 3 Opus, Sonnet, Haiku"
-                        configured={false}
+                        defaultModel="claude-3-opus-20240229"
+                        disabled={!isSuperAdmin}
                     />
-                    <AIProviderCard
-                        name="Google Gemini"
-                        description="Gemini Pro, Vision"
-                        configured={false}
+                    <AIConfigForm
+                        provider="openrouter"
+                        name="OpenRouter"
+                        description="Accès unifié aux modèles (Mistral, Llama, etc.)"
+                        defaultModel="mistralai/mixtral-8x7b-instruct"
+                        disabled={!isSuperAdmin}
                     />
                 </div>
             </div>
@@ -91,18 +113,20 @@ export default function SecurityPage() {
     );
 }
 
-function SettingCard({ title, description, enabled }: {
+function SettingCard({ title, description, enabled, disabled }: {
     title: string;
     description: string;
     enabled: boolean;
+    disabled?: boolean;
 }) {
     return (
-        <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <div className={`flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg ${disabled ? 'opacity-60' : ''}`}>
             <div>
                 <h3 className="font-medium text-gray-900 dark:text-white">{title}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
             </div>
             <button
+                disabled={disabled}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${enabled ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
                     }`}
             >
@@ -115,20 +139,93 @@ function SettingCard({ title, description, enabled }: {
     );
 }
 
-function AIProviderCard({ name, description, configured }: {
+function AIConfigForm({ provider, name, description, defaultModel, disabled }: {
+    provider: string;
     name: string;
     description: string;
-    configured: boolean;
+    defaultModel: string;
+    disabled?: boolean;
 }) {
+    const [apiKey, setApiKey] = useState("");
+    const [model, setModel] = useState(defaultModel);
+    const [loading, setLoading] = useState(false);
+    const [saved, setSaved] = useState(false);
+
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("/api/ai", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    provider,
+                    apiKey,
+                    model,
+                    enabled: true
+                }),
+            });
+
+            if (res.ok) {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            }
+        } catch (error) {
+            console.error("Error saving config:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-            <div>
-                <h3 className="font-medium text-gray-900 dark:text-white">{name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <div className={`p-4 border border-gray-200 dark:border-gray-700 rounded-lg ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
+            <div className="flex justify-between items-start mb-4">
+                <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">{name}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+                </div>
+                {saved ? (
+                    <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400 font-medium">
+                        <Check className="w-4 h-4" />
+                        Enregistré
+                    </span>
+                ) : (
+                    <button
+                        onClick={handleSave}
+                        disabled={loading || !apiKey}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Save className="w-4 h-4" />
+                        {loading ? "..." : "Sauvegarder"}
+                    </button>
+                )}
             </div>
-            <button className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                {configured ? "Configuré" : "Configurer"}
-            </button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        API Key
+                    </label>
+                    <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder={`sk-...`}
+                        className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        Modèle par défaut
+                    </label>
+                    <input
+                        type="text"
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
+                        placeholder={defaultModel}
+                        className="w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+            </div>
         </div>
     );
 }
