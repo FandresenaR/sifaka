@@ -7,7 +7,17 @@ export class ProjectsService {
     constructor(private prisma: PrismaService) { }
 
     async create(data: CreateProjectDto) {
-        return this.prisma.project.create({ data });
+        const slug = data.name
+            .toLowerCase()
+            .replace(/ /g, '-')
+            .replace(/[^\w-]+/g, '');
+
+        return this.prisma.project.create({
+            data: {
+                ...data,
+                slug
+            }
+        });
     }
 
     async findAll() {

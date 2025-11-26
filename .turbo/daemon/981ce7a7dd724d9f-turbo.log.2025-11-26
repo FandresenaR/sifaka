@@ -6,3 +6,4 @@
 2025-11-26T18:03:55.399135Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
 2025-11-26T18:03:55.420265Z  WARN turborepo_filewatch: failed to remove cookie file failed to remove file `I:\Projets\sifaka\.turbo\cookies\.turbo-cookie`
 2025-11-26T18:03:55.530915Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2025-11-26T18:18:15.549718Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
