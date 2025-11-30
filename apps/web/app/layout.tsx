@@ -6,6 +6,9 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 export const metadata: Metadata = {
   title: "Sifaka CMS - Modular AI-Powered Content Management",
   description: "Un CMS modulaire, database-agnostic et propulsé par l'IA pour gérer vos contenus intelligemment",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

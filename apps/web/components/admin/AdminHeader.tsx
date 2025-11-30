@@ -58,8 +58,13 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                             {projectLogo ? (
                                 <img src={projectLogo} alt={projectName} className="h-8 w-8 rounded-lg" />
                             ) : (
-                                <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                                    S
+                                <div className="h-8 w-8 relative rounded-lg overflow-hidden">
+                                    <Image
+                                        src="/logo.png"
+                                        alt="Sifaka Logo"
+                                        fill
+                                        className="object-cover"
+                                    />
                                 </div>
                             )}
                             <span className="font-semibold text-lg text-gray-900 dark:text-white hidden sm:block">
@@ -77,8 +82,8 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                         key={item.name}
                                         href={item.href}
                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active
-                                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" />
@@ -158,8 +163,8 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                         href={item.href}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${active
-                                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                             }`}
                                     >
                                         <Icon className="w-5 h-5" />
