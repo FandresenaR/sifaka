@@ -16,5 +16,6 @@ export interface Media {
         name?: string;
         email?: string;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }

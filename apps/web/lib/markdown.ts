@@ -7,7 +7,9 @@ export function renderMarkdownOrHtml(content: string): string {
         return content;
     }
     // Otherwise, treat as Markdown
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (marked as any).parseSync === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (marked as any).parseSync(content);
     }
     return marked.parse(content) as string;
