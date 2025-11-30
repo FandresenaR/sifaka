@@ -40,6 +40,13 @@ vendor/
 .env
 .env.*
 
+# Turbo
+.turbo
+
+# Next.js
+.next/
+out/
+
 # Vercel
 .vercel
 
