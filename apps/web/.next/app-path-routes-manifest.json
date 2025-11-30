@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/blog/page": "/admin/blog",
+  "/admin/media/page": "/admin/media",
+  "/admin/monitoring/page": "/admin/monitoring",
+  "/admin/page": "/admin",
+  "/admin/products/page": "/admin/products",
+  "/admin/security/page": "/admin/security",
+  "/admin/users/page": "/admin/users",
+  "/api/ai/route": "/api/ai",
+  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
+  "/auth/callback/page": "/auth/callback",
+  "/auth/error/page": "/auth/error",
+  "/auth/signin/page": "/auth/signin",
+  "/icon.png/route": "/icon.png",
+  "/page": "/"
+}
