@@ -189,51 +189,80 @@ npx prisma db pull           # ❌ Erreur P1001
 npx prisma studio            # ❌ Erreur P1001
 ```
 
-## Limitations importantes
+## Workflow de développement
 
-### ❌ Prisma CLI ne fonctionne PAS
-
-Les commandes suivantes **ne fonctionnent pas** avec Neon Azure (WebSocket uniquement) :
+### Avec port 5432 (Recommandé)
 
 ```bash
-npx prisma migrate dev    # ❌ Erreur P1001
-npx prisma db pull        # ❌ Erreur P1001  
-npx prisma db push        # ❌ Erreur P1001
+# 1. Modifier le schema Prisma
+# prisma/schema.prisma
+
+# 2. Créer une migration
+npx prisma migrate dev --name add_user_phone
+
+# 3. Le client est régénéré automatiquement
+
+# 4. Utiliser dans le code
+import prisma from '@/lib/prisma'
+const users = await prisma.user.findMany()
 ```
 
-**Raison :** Neon Azure n'expose que le port 443 (WebSocket), pas le port 5432 (PostgreSQL standard).
+### Sans port 5432 (WebSocket uniquement)
 
-### ✅ Solutions alternatives
-
-**1. Migrations SQL manuelles**
 ```bash
-# Créer un fichier SQL
-cat > migrations/001_add_field.sql << 'EOF'
+# 1. Modifier le schema Prisma
+# prisma/schema.prisma
+
+# 2. Créer le SQL de migration manuellement
+cat > migrations/001_add_phone.sql << 'EOF'
 ALTER TABLE "User" ADD COLUMN "phoneNumber" TEXT;
 EOF
 
-# Appliquer la migration
-npm run db:migrate migrations/001_add_field.sql
+# 3. Appliquer la migration
+npm run db:migrate migrations/001_add_phone.sql
+
+# 4. Régénérer le client Prisma
+npx prisma generate
+
+# 5. Utiliser dans le code (production)
+import prisma from '@/lib/prisma-neon'
+const users = await prisma.user.findMany()
 ```
 
-**2. Utiliser Neon Console**
-- Modifier le schéma via l'interface web de Neon
+## Limitations et solutions
 
-**3. PostgreSQL local pour développement**
-```bash
-# Docker Compose
-docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=dev postgres:16
+### Port 5432 disponible
 
-# Utiliser DATABASE_URL local pour les migrations
-DATABASE_URL=postgresql://postgres:dev@localhost:5432/app npx prisma migrate dev
-```
+✅ **Aucune limitation** - Workflow Prisma standard
+- Toutes les commandes CLI fonctionnent
+- Migrations automatiques
+- Prisma Studio disponible
+
+### WebSocket uniquement (port 443)
+
+❌ **Limitations :**
+- Prisma CLI ne fonctionne pas (`migrate`, `db pull`, `push`, `studio`)
+- Migrations manuelles requises
+
+✅ **Solutions :**
+1. **Migrations SQL manuelles** (voir scripts)
+2. **PostgreSQL local pour dev** + Neon pour production
+3. **Neon Console** pour modifications de schéma
+4. **Prisma Studio local** avec PostgreSQL Docker
 
 ## Déploiement Production
 
 ### Vercel / Edge Runtime
 
+**Port 5432 disponible :**
 ```typescript
-// app/api/users/route.ts
+// Simple, utilise lib/prisma.ts partout
+import prisma from '@/lib/prisma'
+```
+
+**WebSocket uniquement :**
+```typescript
+// Utilise lib/prisma-neon.ts pour les API routes
 import prisma from '@/lib/prisma-neon'
 
 export async function GET() {
@@ -244,10 +273,13 @@ export async function GET() {
 
 ### Variables d'environnement Vercel
 
-Ajouter dans les paramètres du projet Vercel :
-- `DATABASE_URL` : Votre URL de connexion Neon poolée
+```env
+DATABASE_URL=postgresql://user:pass@host-pooler.neon.tech/db?sslmode=require
+NEXTAUTH_URL=https://your-domain.com
+NEXTAUTH_SECRET=your-production-secret
+```
 
-## Scripts personnalisés
+## Scripts personnalisés (WebSocket uniquement)
 
 Les scripts de développement sont dans `scripts/` :
 
@@ -272,15 +304,92 @@ const result = await client.query('SELECT * FROM "User"')
 
 ### Erreur: Can't reach database server at port 5432
 
-**Solution :** Utiliser les scripts npm (`npm run db:*`) au lieu de Prisma CLI.
+**Diagnostic :**
+```bash
+npm run db:query "SELECT 1"
+```
+
+**Si ça fonctionne :**
+- Vous avez accès WebSocket (port 443) ✅
+- Prisma CLI ne fonctionne pas ❌
+- **Solution :** Utiliser scripts npm (`db:*`) et `lib/prisma-neon.ts`
+
+**Si ça ne fonctionne pas :**
+- Vérifier `DATABASE_URL` dans `.env`
+- Vérifier les credentials Neon
+- Tester depuis Neon Console
 
 ### Erreur: No database host or connection string
 
-**Solution :** Vérifier que `.env` contient `DATABASE_URL` sans guillemets.
+**Solution :** Vérifier que `.env` contient `DATABASE_URL` sans guillemets :
+```env
+# ✅ Correct
+DATABASE_URL=postgresql://...
+
+# ❌ Incorrect
+DATABASE_URL="postgresql://..."
+```
+
+### Comment savoir si j'ai le port 5432 ?
+
+**Test simple :**
+```bash
+npx prisma db pull
+```
+
+- ✅ **Succès** → Port 5432 disponible (Environnement A)
+- ❌ **Erreur P1001** → WebSocket uniquement (Environnement B)
 
 ### Prisma Studio ne se lance pas
 
-**Solution :** Prisma Studio utilise le même driver que CLI, il peut ne pas fonctionner. Utiliser Neon Console à la place.
+**Environnement A (port 5432) :**
+```bash
+npx prisma studio  # ✅ Devrait fonctionner
+```
+
+**Environnement B (WebSocket) :**
+```bash
+# Prisma Studio ne fonctionne pas
+# Alternatives :
+# 1. Neon Console (web interface)
+# 2. PostgreSQL local + Studio
+# 3. Scripts SQL personnalisés
+npm run db:query "SELECT * FROM \"User\""
+```
+
+## Migration d'un environnement à l'autre
+
+### De port 5432 vers WebSocket uniquement
+
+1. Installer les dépendances :
+```bash
+npm install @neondatabase/serverless @prisma/adapter-neon ws
+```
+
+2. Créer `lib/prisma-neon.ts` (voir ci-dessus)
+
+3. Utiliser dans les API routes :
+```typescript
+import prisma from '@/lib/prisma-neon'
+```
+
+### De WebSocket vers port 5432
+
+1. Vérifier la disponibilité :
+```bash
+npx prisma db pull
+```
+
+2. Si ça fonctionne, simplifier :
+```typescript
+// Utiliser lib/prisma.ts partout
+import prisma from '@/lib/prisma'
+```
+
+3. Supprimer les dépendances (optionnel) :
+```bash
+npm uninstall @neondatabase/serverless @prisma/adapter-neon ws
+```
 
 ## Ressources
 
