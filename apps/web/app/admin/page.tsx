@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import * as api from "@/lib/api-client"
@@ -13,22 +14,31 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter()
   const { data: session, status } = useSession()
   const [stats, setStats] = useState<Stats>({ users: 0, admins: 0, superAdmins: 0 })
-  const [statsLoading, setStatsLoading] = useState(false)
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const user = session?.user
 
   useEffect(() => {
+    // Ne rien faire pendant le chargement
+    if (status === "loading") return
+    
+    // Si authentifié, charger les stats
     if (status === "authenticated" && session?.user) {
       fetchStats()
     }
+    // Note: La protection est gérée par le middleware, pas besoin de rediriger ici
   }, [status, session])
 
   const fetchStats = async () => {
     try {
       setStatsLoading(true)
+      setError(null)
       
+      // Appel API avec authentication automatique
       const response = await api.get("/users")
       const users = Array.isArray(response) ? response : response.data || []
       
@@ -38,8 +48,9 @@ export default function AdminDashboard() {
       
       setStats({ users: userCount, admins: adminCount, superAdmins: superAdminCount })
     } catch (err) {
-      // Silencieusement ignorer l'erreur - le backend n'est peut-être pas lancé
-      // Les stats resteront à 0
+      console.error("Erreur chargement stats:", err)
+      setError(err instanceof Error ? err.message : "Erreur lors du chargement des statistiques")
+      setStatsLoading(false)
     } finally {
       setStatsLoading(false)
     }
@@ -117,14 +128,23 @@ export default function AdminDashboard() {
     },
   ]
 
-  // Afficher un placeholder si pas encore de session
+  // Afficher le loader pendant le chargement
+  if (status === "loading" || statsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Chargement du dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si pas de session après chargement, afficher un message (le middleware devrait rediriger)
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-500">Chargement du dashboard...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Redirection en cours...</p>
       </div>
     )
   }
@@ -149,6 +169,15 @@ export default function AdminDashboard() {
           Déconnexion
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-700 dark:text-red-300 text-sm">
+            ⚠️ {error}
+          </p>
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

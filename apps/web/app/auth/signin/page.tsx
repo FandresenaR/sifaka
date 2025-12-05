@@ -1,10 +1,10 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Chrome } from "lucide-react";
+import { signIn, useSession } from "next-auth/react";
 
 export default function SignInPage() {
     const router = useRouter();
@@ -13,7 +13,9 @@ export default function SignInPage() {
 
     // Rediriger vers admin si déjà connecté
     useEffect(() => {
+        console.log('[signin] status:', status, 'session:', session?.user?.email, 'role:', session?.user?.role);
         if (status === "authenticated" && session?.user) {
+            console.log('[signin] User authenticated, redirecting to /admin');
             router.push("/admin");
         }
     }, [status, session, router]);
@@ -23,12 +25,12 @@ export default function SignInPage() {
         try {
             await signIn("google", { callbackUrl: "/admin" });
         } catch (error) {
-            console.error("Error signing in:", error);
+            console.error("Erreur de connexion:", error);
             setIsLoading(false);
         }
     };
 
-    // Afficher un loader pendant le chargement de la session
+    // Afficher un loader pendant la vérification de session
     if (status === "loading") {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">

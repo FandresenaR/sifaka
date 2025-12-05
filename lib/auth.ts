@@ -5,11 +5,10 @@ import prisma from "@/lib/prisma"
 import type { UserRole } from "@prisma/client"
 import type { Adapter } from "next-auth/adapters"
 
-// Custom fetch pour contourner les problèmes undici
-import "./custom-fetch"
-
 // Email du super admin
 const SUPER_ADMIN_EMAIL = "fandresenar6@gmail.com"
+
+// Note: La configuration IPv4 pour undici est dans instrumentation.ts
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     // Temporairement désactivé pour éviter les problèmes de réseau
@@ -29,25 +28,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
-        async signIn({ user, account, profile }) {
-            // Permettre la connexion
+        async signIn({ user }) {
             return true
         },
-        async jwt({ token, user, account, profile }) {
-            // Premier login
+        async jwt({ token, account, profile }) {
+            // Premier login - définir toutes les données
             if (account && profile) {
-                token.id = profile.sub // Utiliser le sub de Google comme ID
+                token.id = profile.sub
                 token.email = profile.email
                 token.name = profile.name
                 token.picture = (profile as any).picture
-                
-                // Vérifier si c'est le super admin
-                if (profile.email === SUPER_ADMIN_EMAIL) {
-                    token.role = "SUPER_ADMIN"
-                } else {
-                    token.role = "USER"
-                }
+                token.role = profile.email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER"
             }
+            
+            // S'assurer que le role est toujours défini
+            if (!token.role && token.email) {
+                token.role = token.email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER"
+            }
+            
             return token
         },
         async session({ session, token }) {
@@ -76,7 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         maxAge: 30 * 24 * 60 * 60, // 30 jours
     },
     basePath: "/api/auth",
-    debug: true, // Temporaire pour debug
+    debug: false,
     trustHost: true,
     useSecureCookies: process.env.NODE_ENV === 'production',
 })
