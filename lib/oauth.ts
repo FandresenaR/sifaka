@@ -84,6 +84,7 @@ export function getCurrentUser(): {
   email: string;
   name: string;
   picture?: string;
+  image?: string;
 } | null {
   if (typeof window === "undefined") return null;
   const user = localStorage.getItem("auth_user");

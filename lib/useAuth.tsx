@@ -10,6 +10,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  image?: string; // Normalisé pour compatibilité avec le header
   picture?: string;
 }
 
@@ -27,7 +28,15 @@ export function useAuth() {
 
       if (isAuth) {
         const currentUser = getCurrentUser();
-        setUser(currentUser);
+        // Normalise le champ image/picture
+        if (currentUser) {
+          setUser({
+            ...currentUser,
+            image: currentUser.picture || currentUser.image,
+          });
+        }
+      }
+
       }
 
       setIsLoading(false);

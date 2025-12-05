@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { useAuth } from "@/lib/useAuth";
+import { useSession, signOut } from "next-auth/react";
 import {
     LayoutDashboard,
     Package,
@@ -28,7 +28,8 @@ interface AdminHeaderProps {
 export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }: AdminHeaderProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
-    const { user, logout } = useAuth();
+    const { data: session } = useSession();
+    const user = session?.user;
 
     const navigation = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -48,7 +49,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
     };
 
     const handleLogout = async () => {
-        await logout();
+        await signOut({ callbackUrl: "/auth/signin" });
     };
 
     return (
@@ -105,7 +106,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                             <div className="flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-700">
                                 <div className="hidden md:block text-right">
                                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {user.name}
+                                        {user.name || "Utilisateur"}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
                                         {user.email}
@@ -115,7 +116,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                 {user.image ? (
                                     <img
                                         src={user.image}
-                                        alt={user.name}
+                                        alt={user.name || "Avatar"}
                                         className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 object-cover"
                                     />
                                 ) : (
@@ -180,7 +181,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                         {user.image ? (
                                             <img
                                                 src={user.image}
-                                                alt={user.name}
+                                                alt={user.name || "Avatar"}
                                                 className="w-8 h-8 rounded-full object-cover"
                                             />
                                         ) : (
@@ -190,7 +191,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                         )}
                                         <div>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {user.name}
+                                                {user.name || "Utilisateur"}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 {user.email}
