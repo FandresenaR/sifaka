@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import * as api from "@/lib/api-client"
-import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut } from "lucide-react"
+import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign } from "lucide-react"
 
 interface Stats {
   users: number
@@ -43,10 +43,6 @@ export default function AdminDashboard() {
     } finally {
       setStatsLoading(false)
     }
-  }
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" })
   }
 
   const modules = [
@@ -131,23 +127,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header avec Logout */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Dashboard Admin
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Bienvenue {user.name} ({user.email})
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Déconnexion
-        </button>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Dashboard Admin
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Bienvenue {user.name} ({user.email})
+        </p>
       </div>
 
       {/* Quick Stats */}
