@@ -37,8 +37,6 @@ export function useAuth() {
         }
       }
 
-      }
-
       setIsLoading(false);
     };
 
