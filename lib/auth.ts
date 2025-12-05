@@ -3,16 +3,18 @@ import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import prisma from "@/lib/prisma"
 import type { UserRole } from "@prisma/client"
+import type { Adapter } from "next-auth/adapters"
 
 // Email du super admin
 const SUPER_ADMIN_EMAIL = "fandresenar6@gmail.com"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    adapter: PrismaAdapter(prisma) as any,
+    adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            allowDangerousEmailAccountLinking: true,
         }),
     ],
     callbacks: {
@@ -43,10 +45,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     pages: {
         signIn: "/auth/signin",
+        error: "/auth/error",
     },
     session: {
         strategy: "database",
     },
+    basePath: "/api/auth",
+    debug: process.env.NODE_ENV === "development",
+    trustHost: true,
 })
 
 // Type augmentation for session

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/lib/useAuth";
 import {
     LayoutDashboard,
     Package,
@@ -12,7 +12,6 @@ import {
     FolderOpen,
     Activity,
     Shield,
-    Settings,
     LogOut,
     Menu,
     X,
@@ -29,7 +28,7 @@ interface AdminHeaderProps {
 export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }: AdminHeaderProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const { user, logout } = useAuth();
 
     const navigation = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -46,6 +45,10 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
             return pathname === href;
         }
         return pathname?.startsWith(href);
+    };
+
+    const handleLogout = async () => {
+        await logout();
     };
 
     return (
@@ -98,24 +101,22 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                     <div className="flex items-center gap-3">
                         <ThemeToggle />
 
-                        {session?.user ? (
+                        {user ? (
                             <div className="flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-700">
                                 <div className="hidden md:block text-right">
                                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {session.user.name}
+                                        {user.name}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {session.user.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}
+                                        {user.email}
                                     </p>
                                 </div>
 
-                                {session.user.image ? (
-                                    <Image
-                                        src={session.user.image}
-                                        alt={session.user.name || "User"}
-                                        width={32}
-                                        height={32}
-                                        className="rounded-full border border-gray-200 dark:border-gray-700"
+                                {user.picture ? (
+                                    <img
+                                        src={user.picture}
+                                        alt={user.name}
+                                        className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 object-cover"
                                     />
                                 ) : (
                                     <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
@@ -124,7 +125,7 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                 )}
 
                                 <button
-                                    onClick={() => signOut({ callbackUrl: "/" })}
+                                    onClick={handleLogout}
                                     className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
                                     title="Déconnexion"
                                 >
@@ -173,16 +174,14 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                 );
                             })}
 
-                            {session?.user && (
+                            {user && (
                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 px-4">
                                     <div className="flex items-center gap-3 mb-3">
-                                        {session.user.image ? (
-                                            <Image
-                                                src={session.user.image}
-                                                alt={session.user.name || "User"}
-                                                width={32}
-                                                height={32}
-                                                className="rounded-full"
+                                        {user.picture ? (
+                                            <img
+                                                src={user.picture}
+                                                alt={user.name}
+                                                className="w-8 h-8 rounded-full object-cover"
                                             />
                                         ) : (
                                             <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
@@ -191,15 +190,18 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                         )}
                                         <div>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {session.user.name}
+                                                {user.name}
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {session.user.email}
+                                                {user.email}
                                             </p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => signOut({ callbackUrl: "/" })}
+                                        onClick={() => {
+                                            handleLogout();
+                                            setMobileMenuOpen(false);
+                                        }}
                                         className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                     >
                                         <LogOut className="w-5 h-5" />
