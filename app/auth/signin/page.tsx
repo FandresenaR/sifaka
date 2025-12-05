@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
 import Link from "next/link";
 import { Chrome } from "lucide-react";
-import { getGoogleAuthURL } from "@/lib/oauth";
 
 export default function SignInPage() {
-    const [googleAuthUrl, setGoogleAuthUrl] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        setGoogleAuthUrl(getGoogleAuthURL());
-    }, []);
-
-    const handleGoogleSignIn = () => {
+    const handleGoogleSignIn = async () => {
         setIsLoading(true);
-        if (googleAuthUrl) {
-            window.location.href = googleAuthUrl;
+        try {
+            await signIn("google", { callbackUrl: "/admin" });
+        } catch (error) {
+            console.error("Error signing in:", error);
+            setIsLoading(false);
         }
     };
 
