@@ -8,8 +8,6 @@ import { auth } from "@/lib/auth"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const session = await auth()
-
   // Routes publiques (toujours accessibles)
   const publicRoutes = [
     "/",
@@ -27,9 +25,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Pour les routes protégées, vérifier la session
+  const session = await auth()
+
   // Protéger les routes /admin
   if (pathname.startsWith("/admin")) {
-    if (!session) {
+    if (!session?.user) {
       const signInUrl = new URL("/auth/signin", request.url)
       signInUrl.searchParams.set("callbackUrl", pathname)
       return NextResponse.redirect(signInUrl)
@@ -43,7 +44,7 @@ export async function middleware(request: NextRequest) {
 
   // Protéger les routes API (sauf auth et publiques)
   if (pathname.startsWith("/api") && !pathname.startsWith("/api/auth")) {
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }

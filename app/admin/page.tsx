@@ -15,16 +15,22 @@ interface Stats {
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const { user, isLoading, isLoggedIn, logout } = useAuth()
+  const { user, isLoading, isLoggedIn, logout, session } = useAuth()
   const [stats, setStats] = useState<Stats>({ users: 0, admins: 0, superAdmins: 0 })
   const [statsLoading, setStatsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Debug
+  useEffect(() => {
+    console.log('[Dashboard] Auth state:', { isLoading, isLoggedIn, hasUser: !!user, hasSession: !!session })
+  }, [isLoading, isLoggedIn, user, session])
 
   useEffect(() => {
     if (isLoading) return
 
     // Redirection si pas authentifié
     if (!isLoggedIn || !user) {
+      console.log('[Dashboard] Not authenticated, redirecting to signin')
       router.push("/auth/signin")
       return
     }

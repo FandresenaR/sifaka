@@ -5,11 +5,15 @@ import prisma from "@/lib/prisma"
 import type { UserRole } from "@prisma/client"
 import type { Adapter } from "next-auth/adapters"
 
+// Custom fetch pour contourner les problèmes undici
+import "./custom-fetch"
+
 // Email du super admin
 const SUPER_ADMIN_EMAIL = "fandresenar6@gmail.com"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    adapter: PrismaAdapter(prisma) as Adapter,
+    // Temporairement désactivé pour éviter les problèmes de réseau
+    // adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -29,25 +33,38 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Permettre la connexion
             return true
         },
-        async session({ session, user }) {
-            if (session.user) {
-                // Ajouter l'ID et le rôle à la session
-                session.user.id = user.id
-                session.user.role = user.role as UserRole
-
+        async jwt({ token, user, account, profile }) {
+            // Premier login
+            if (account && profile) {
+                token.id = profile.sub // Utiliser le sub de Google comme ID
+                token.email = profile.email
+                token.name = profile.name
+                token.picture = (profile as any).picture
+                
                 // Vérifier si c'est le super admin
-                if (user.email === SUPER_ADMIN_EMAIL) {
-                    // Mettre à jour le rôle en SUPER_ADMIN si ce n'est pas déjà fait
-                    if (user.role !== "SUPER_ADMIN") {
-                        await prisma.user.update({
-                            where: { id: user.id },
-                            data: { role: "SUPER_ADMIN" },
-                        })
-                        session.user.role = "SUPER_ADMIN"
-                    }
+                if (profile.email === SUPER_ADMIN_EMAIL) {
+                    token.role = "SUPER_ADMIN"
+                } else {
+                    token.role = "USER"
                 }
             }
+            return token
+        },
+        async session({ session, token }) {
+            if (session.user && token) {
+                session.user.id = token.id as string
+                session.user.role = token.role as UserRole
+                session.user.email = token.email as string
+                session.user.name = token.name as string
+                session.user.image = token.picture as string
+            }
             return session
+        },
+        async redirect({ url, baseUrl }) {
+            // Après connexion, rediriger vers /admin
+            if (url.startsWith(baseUrl)) return url
+            if (url.startsWith("/")) return `${baseUrl}${url}`
+            return baseUrl + "/admin"
         },
     },
     pages: {
@@ -55,11 +72,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         error: "/auth/error",
     },
     session: {
-        strategy: "database",
+        strategy: "jwt",
+        maxAge: 30 * 24 * 60 * 60, // 30 jours
     },
     basePath: "/api/auth",
-    debug: false,
+    debug: true, // Temporaire pour debug
     trustHost: true,
+    useSecureCookies: process.env.NODE_ENV === 'production',
 })
 
 // Type augmentation for session
@@ -75,6 +94,14 @@ declare module "next-auth" {
     }
 
     interface User {
-        role: UserRole
+        role?: UserRole
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        id?: string
+        role?: UserRole
+        picture?: string
     }
 }
