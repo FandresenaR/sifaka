@@ -11,6 +11,7 @@
             "dev": true
         }
     },
+    "ignoreCommand": "exit 0",
     "env": {
         "DATABASE_URL": "@database_url",
         "NEXTAUTH_SECRET": "@nextauth_secret",
