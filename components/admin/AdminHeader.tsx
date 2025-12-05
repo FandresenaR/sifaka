@@ -112,9 +112,9 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                                     </p>
                                 </div>
 
-                                {user.picture ? (
+                                {user.image ? (
                                     <img
-                                        src={user.picture}
+                                        src={user.image}
                                         alt={user.name}
                                         className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 object-cover"
                                     />
@@ -177,9 +177,9 @@ export default function AdminHeader({ projectName = "Sifaka CMS", projectLogo }:
                             {user && (
                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 px-4">
                                     <div className="flex items-center gap-3 mb-3">
-                                        {user.picture ? (
+                                        {user.image ? (
                                             <img
-                                                src={user.picture}
+                                                src={user.image}
                                                 alt={user.name}
                                                 className="w-8 h-8 rounded-full object-cover"
                                             />
