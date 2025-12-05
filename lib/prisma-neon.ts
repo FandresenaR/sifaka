@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
-import { Pool, neonConfig } from '@neondatabase/serverless'
+import { neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 
 /**
@@ -21,6 +21,8 @@ import ws from 'ws'
 // Configure Neon to use WebSockets (port 443)
 neonConfig.webSocketConstructor = ws
 neonConfig.fetchConnectionCache = true
+neonConfig.useSecureWebSocket = true
+neonConfig.pipelineConnect = "password"
 
 const connectionString = process.env.DATABASE_URL
 
@@ -28,12 +30,22 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not defined')
 }
 
-const pool = new Pool({ connectionString })
-const adapter = new PrismaNeon(pool)
+const adapter = new PrismaNeon({ connectionString })
 
-const prisma = new PrismaClient({ 
-  adapter,
-  log: ['error']
-})
+const prismaClientSingleton = () => {
+  return new PrismaClient({ 
+    adapter,
+    log: ['error']
+  })
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: undefined | ReturnType<typeof prismaClientSingleton>
+}
+
+const prisma = globalThis.prisma ?? prismaClientSingleton()
+
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma
 
 export default prisma
