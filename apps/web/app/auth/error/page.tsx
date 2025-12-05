@@ -1,11 +1,15 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState, Suspense } from "react"
 import Link from "next/link"
 
-export default function AuthErrorPage() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get("error")
+function AuthErrorContent() {
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setError(params.get("error"))
+  }, [])
 
   const errorMessages: Record<string, { title: string; description: string; solution: string }> = {
     Configuration: {
@@ -108,5 +112,13 @@ http://localhost:3000/api/auth/callback/google
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <AuthErrorContent />
+    </Suspense>
   )
 }

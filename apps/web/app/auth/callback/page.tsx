@@ -1,21 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { exchangeCodeForToken, setToken, setCurrentUser } from "@/lib/oauth";
 import { Chrome } from "lucide-react";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const code = searchParams.get("code");
-        const errorParam = searchParams.get("error");
+        // Récupérer les paramètres depuis l'URL
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const errorParam = params.get("error");
 
         if (errorParam) {
           throw new Error(`Google OAuth error: ${errorParam}`);
@@ -42,7 +43,7 @@ export default function OAuthCallbackPage() {
     };
 
     handleCallback();
-  }, [searchParams, router]);
+  }, [router]);
 
   if (error) {
     return (
@@ -95,5 +96,13 @@ export default function OAuthCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

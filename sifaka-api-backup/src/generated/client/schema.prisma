@@ -16,14 +16,15 @@ datasource db {
 // ============================================
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  name       String?
-  avatar     String?
-  role       UserRole @default(USER)
-  supabaseId String?  @unique // Link to Supabase Auth user
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String?
+  avatar      String?
+  role        UserRole  @default(USER)
+  supabaseId  String?   @unique // Link to Supabase Auth user
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
 
   // Relations
   projects      ProjectMember[]

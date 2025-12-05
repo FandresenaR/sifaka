@@ -55,16 +55,13 @@ export class AuthService implements IAuthService {
                 where: { email: payload.email! },
                 update: {
                     name: payload.name,
-                    image: payload.picture,
-                    lastLoginAt: new Date(),
+                    avatar: payload.picture,
                 },
                 create: {
                     email: payload.email!,
                     name: payload.name || 'User',
-                    image: payload.picture,
+                    avatar: payload.picture,
                     role: 'USER', // Rôle par défaut
-                    createdAt: new Date(),
-                    lastLoginAt: new Date(),
                 },
             });
 
@@ -86,7 +83,7 @@ export class AuthService implements IAuthService {
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                    picture: user.image,
+                    picture: user.avatar,
                     role: user.role,
                 },
             };

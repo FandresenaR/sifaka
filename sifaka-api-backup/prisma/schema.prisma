@@ -24,6 +24,7 @@ model User {
   supabaseId    String?   @unique // Link to Supabase Auth user
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
   
   // Relations
   projects      ProjectMember[]

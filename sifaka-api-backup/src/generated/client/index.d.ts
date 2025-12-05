@@ -1806,6 +1806,7 @@ export namespace Prisma {
     supabaseId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    lastLoginAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1817,6 +1818,7 @@ export namespace Prisma {
     supabaseId: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    lastLoginAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1828,6 +1830,7 @@ export namespace Prisma {
     supabaseId: number
     createdAt: number
     updatedAt: number
+    lastLoginAt: number
     _all: number
   }
 
@@ -1841,6 +1844,7 @@ export namespace Prisma {
     supabaseId?: true
     createdAt?: true
     updatedAt?: true
+    lastLoginAt?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1852,6 +1856,7 @@ export namespace Prisma {
     supabaseId?: true
     createdAt?: true
     updatedAt?: true
+    lastLoginAt?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1863,6 +1868,7 @@ export namespace Prisma {
     supabaseId?: true
     createdAt?: true
     updatedAt?: true
+    lastLoginAt?: true
     _all?: true
   }
 
@@ -1947,6 +1953,7 @@ export namespace Prisma {
     supabaseId: string | null
     createdAt: Date
     updatedAt: Date
+    lastLoginAt: Date | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1975,6 +1982,7 @@ export namespace Prisma {
     supabaseId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastLoginAt?: boolean
     projects?: boolean | User$projectsArgs<ExtArgs>
     tasksCreated?: boolean | User$tasksCreatedArgs<ExtArgs>
     tasksAssigned?: boolean | User$tasksAssignedArgs<ExtArgs>
@@ -1993,6 +2001,7 @@ export namespace Prisma {
     supabaseId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastLoginAt?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -2004,6 +2013,7 @@ export namespace Prisma {
     supabaseId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastLoginAt?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -2015,9 +2025,10 @@ export namespace Prisma {
     supabaseId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    lastLoginAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "avatar" | "role" | "supabaseId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "avatar" | "role" | "supabaseId" | "createdAt" | "updatedAt" | "lastLoginAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     projects?: boolean | User$projectsArgs<ExtArgs>
     tasksCreated?: boolean | User$tasksCreatedArgs<ExtArgs>
@@ -2049,6 +2060,7 @@ export namespace Prisma {
       supabaseId: string | null
       createdAt: Date
       updatedAt: Date
+      lastLoginAt: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -2486,6 +2498,7 @@ export namespace Prisma {
     readonly supabaseId: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly lastLoginAt: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -11380,7 +11393,8 @@ export namespace Prisma {
     role: 'role',
     supabaseId: 'supabaseId',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    lastLoginAt: 'lastLoginAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -11729,6 +11743,7 @@ export namespace Prisma {
     supabaseId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     projects?: ProjectMemberListRelationFilter
     tasksCreated?: TaskListRelationFilter
     tasksAssigned?: TaskListRelationFilter
@@ -11746,6 +11761,7 @@ export namespace Prisma {
     supabaseId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastLoginAt?: SortOrderInput | SortOrder
     projects?: ProjectMemberOrderByRelationAggregateInput
     tasksCreated?: TaskOrderByRelationAggregateInput
     tasksAssigned?: TaskOrderByRelationAggregateInput
@@ -11766,6 +11782,7 @@ export namespace Prisma {
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     projects?: ProjectMemberListRelationFilter
     tasksCreated?: TaskListRelationFilter
     tasksAssigned?: TaskListRelationFilter
@@ -11783,6 +11800,7 @@ export namespace Prisma {
     supabaseId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastLoginAt?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -11800,6 +11818,7 @@ export namespace Prisma {
     supabaseId?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type ProjectWhereInput = {
@@ -12427,6 +12446,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
@@ -12444,6 +12464,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
@@ -12461,6 +12482,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
@@ -12478,6 +12500,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
@@ -12495,6 +12518,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -12506,6 +12530,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -12517,6 +12542,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProjectCreateInput = {
@@ -13233,6 +13259,17 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type ProjectMemberListRelationFilter = {
     every?: ProjectMemberWhereInput
     some?: ProjectMemberWhereInput
@@ -13297,6 +13334,7 @@ export namespace Prisma {
     supabaseId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastLoginAt?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -13308,6 +13346,7 @@ export namespace Prisma {
     supabaseId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastLoginAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -13319,6 +13358,7 @@ export namespace Prisma {
     supabaseId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    lastLoginAt?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -13381,14 +13421,7 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type EnumProjectStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
-  }
-
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -13396,7 +13429,17 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type EnumProjectStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
   }
 
   export type FloatNullableFilter<$PrismaModel = never> = {
@@ -13468,20 +13511,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProjectStatusFilter<$PrismaModel>
     _max?: NestedEnumProjectStatusFilter<$PrismaModel>
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -14067,6 +14096,10 @@ export namespace Prisma {
     set?: Date | string
   }
 
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type ProjectMemberUpdateManyWithoutUserNestedInput = {
     create?: XOR<ProjectMemberCreateWithoutUserInput, ProjectMemberUncheckedCreateWithoutUserInput> | ProjectMemberCreateWithoutUserInput[] | ProjectMemberUncheckedCreateWithoutUserInput[]
     connectOrCreate?: ProjectMemberCreateOrConnectWithoutUserInput | ProjectMemberCreateOrConnectWithoutUserInput[]
@@ -14293,10 +14326,6 @@ export namespace Prisma {
 
   export type EnumProjectStatusFieldUpdateOperationsInput = {
     set?: $Enums.ProjectStatus
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type NullableFloatFieldUpdateOperationsInput = {
@@ -14820,6 +14849,17 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -14900,14 +14940,7 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedEnumProjectStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -14915,7 +14948,17 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumProjectStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumProjectStatusFilter<$PrismaModel> | $Enums.ProjectStatus
   }
 
   export type NestedFloatNullableFilter<$PrismaModel = never> = {
@@ -14937,20 +14980,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProjectStatusFilter<$PrismaModel>
     _max?: NestedEnumProjectStatusFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -15792,6 +15821,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
     comments?: TaskCommentCreateNestedManyWithoutUserInput
@@ -15808,6 +15838,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
@@ -15885,6 +15916,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
     comments?: TaskCommentUpdateManyWithoutUserNestedInput
@@ -15901,6 +15933,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -15956,6 +15989,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
     comments?: TaskCommentCreateNestedManyWithoutUserInput
@@ -15972,6 +16006,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
@@ -15993,6 +16028,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     comments?: TaskCommentCreateNestedManyWithoutUserInput
@@ -16009,6 +16045,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
@@ -16174,6 +16211,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
     comments?: TaskCommentUpdateManyWithoutUserNestedInput
@@ -16190,6 +16228,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -16217,6 +16256,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     comments?: TaskCommentUpdateManyWithoutUserNestedInput
@@ -16233,6 +16273,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -16359,6 +16400,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
@@ -16375,6 +16417,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
@@ -16462,6 +16505,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
@@ -16478,6 +16522,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
@@ -16637,6 +16682,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
@@ -16653,6 +16699,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
@@ -16730,6 +16777,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
@@ -16746,6 +16794,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput
@@ -16762,6 +16811,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberCreateNestedManyWithoutUserInput
     tasksCreated?: TaskCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskCreateNestedManyWithoutAssigneeInput
@@ -16778,6 +16828,7 @@ export namespace Prisma {
     supabaseId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    lastLoginAt?: Date | string | null
     projects?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
     tasksCreated?: TaskUncheckedCreateNestedManyWithoutCreatedByInput
     tasksAssigned?: TaskUncheckedCreateNestedManyWithoutAssigneeInput
@@ -16898,6 +16949,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUpdateManyWithoutAssigneeNestedInput
@@ -16914,6 +16966,7 @@ export namespace Prisma {
     supabaseId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     projects?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
     tasksCreated?: TaskUncheckedUpdateManyWithoutCreatedByNestedInput
     tasksAssigned?: TaskUncheckedUpdateManyWithoutAssigneeNestedInput

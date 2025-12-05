@@ -31,14 +31,17 @@ async function request<T = any>(
   }
 
   // Ajoute le header Authorization
-  const headers: Record<string, string> = {
+  const headers: HeadersInit = {
     "Content-Type": "application/json",
-    ...fetchOptions.headers,
   };
+
+  if (fetchOptions.headers && typeof fetchOptions.headers === "object") {
+    Object.assign(headers, fetchOptions.headers);
+  }
 
   const token = getToken();
   if (token) {
-    headers.Authorization = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const response = await fetch(url, {

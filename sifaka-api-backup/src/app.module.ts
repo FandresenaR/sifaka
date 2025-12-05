@@ -8,6 +8,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ClientsModule } from './clients/clients.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ClientsModule } from './clients/clients.module';
     ProjectsModule,
     TasksModule,
     ClientsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
