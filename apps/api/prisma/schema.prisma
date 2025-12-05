@@ -1,9 +1,10 @@
 // Sifaka CRM - Prisma Schema
-// Database: Supabase PostgreSQL
+// Database: Neon PostgreSQL (Serverless)
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  provider        = "prisma-client-js"
+  output          = "../src/generated/client"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {

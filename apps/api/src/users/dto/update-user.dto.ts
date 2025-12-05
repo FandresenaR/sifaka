@@ -1,10 +1,10 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsEnum } from "class-validator";
 
 enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  CLIENT = 'CLIENT',
+  USER = "USER",
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  CLIENT = "CLIENT",
 }
 
 export class UpdateUserDto {
