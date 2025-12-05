@@ -48,3 +48,20 @@ next-env.d.ts
 # Prisma generated files
 **/generated/
 .prisma/
+
+# Python virtual environments
+.venv/
+venv/
+__pycache__/
+
+# Backup and unused directories
+sifaka-api-backup/
+zoahary-cms/
+
+# Disabled files
+*.disabled.ts
+*.old.ts
+
+# Test files
+test-db.js
+migration.sql
