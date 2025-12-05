@@ -51,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         strategy: "database",
     },
     basePath: "/api/auth",
-    debug: process.env.NODE_ENV === "development",
+    debug: false,
     trustHost: true,
 })
 
