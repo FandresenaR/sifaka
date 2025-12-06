@@ -1,21 +1,36 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { ProjectsModule } from './projects/projects.module';
-import { TasksModule } from './tasks/tasks.module';
-import { ClientsModule } from './clients/clients.module';
+import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { PrismaModule } from "./prisma/prisma.module";
+import { UsersModule } from "./users/users.module";
+import { AuthModule, AuthGuard, RolesGuard } from "./auth";
+import { ProjectsModule } from "./projects/projects.module";
+import { TasksModule } from "./tasks/tasks.module";
+import { ClientsModule } from "./clients/clients.module";
 
 @Module({
   imports: [
     PrismaModule,
     AuthModule,
+    UsersModule,
     ProjectsModule,
     TasksModule,
     ClientsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Auth guard global - toutes les routes nécessitent l'auth par défaut
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    // Roles guard global - vérifie les rôles après l'auth
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
-export class AppModule { }
+export class AppModule {}

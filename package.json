@@ -1,24 +1,49 @@
 {
-  "name": "sifaka-monorepo",
+  "name": "@sifaka/web",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.7.4",
+    "@neondatabase/serverless": "^0.10.4",
+    "@prisma/adapter-neon": "^6.19.0",
+    "@prisma/client": "^6.19.0",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.84.0",
+    "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "i18next": "^25.6.3",
+    "lucide-react": "^0.468.0",
+    "marked": "^12.0.0",
+    "next": "^16.0.7",
+    "next-auth": "^5.0.0-beta.25",
+    "node-fetch": "^2.7.0",
+    "openai": "^6.9.1",
+    "pg": "^8.16.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-easy-crop": "^5.0.8",
+    "react-i18next": "^16.3.5",
+    "undici": "^5.29.0",
+    "ws": "^8.18.3",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.12",
-    "prettier": "latest",
-    "turbo": "latest"
-  },
-  "packageManager": "npm@10.0.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "overrides": {
-    "glob": "^10.0.0",
-    "inflight": "^2.0.0"
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/ws": "^8.18.1",
+    "dotenv": "^17.2.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.4",
+    "prisma": "^6.19.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

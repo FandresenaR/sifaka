@@ -1,5 +1,0 @@
-# Paste your Supabase Connection String here
-# Go to Supabase Dashboard > Settings > Database > Connection String > Transaction Mode
-# Copy the entire string starting with postgresql://
-
-DATABASE_URL="postgresql://postgres.sakfwtcnfvjoyvsgjixw:E69k&%b3EV@SOG@aws-1-eu-north-1.pooler.supabase.com:6543/postgres"

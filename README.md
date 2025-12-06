@@ -1,95 +1,197 @@
-# Sifaka CMS (Monorepo)
+# Sifaka - Next.js Web Application
 
-A modern, AI-powered Content Management System built with a **NestJS** backend and **Next.js** frontend, managed as a Monorepo using **TurboRepo**.
+A modern Next.js web application with Neon PostgreSQL database, NextAuth authentication, and AI chat features.
 
-## Architecture
+## 🚀 Quick Start
 
-This project is structured as a Monorepo:
+### Prerequisites
 
-- **`apps/api`**: Backend API built with **NestJS**.
-  - **Database**: PostgreSQL (via Prisma ORM).
-  - **Auth**: Abstracted Authentication Service.
-  - **Modules**: Projects (Multi-tenancy), CMS (Dynamic Content).
-- **`apps/web`**: Frontend application built with **Next.js 16** (App Router).
-  - **Styling**: Tailwind CSS.
-  - **State**: React Server Components & Client Hooks.
-
-## Prerequisites
-
-- Node.js 18+
+- Node.js 20.x or later
 - npm or yarn
-- PostgreSQL Database (Neon, Supabase, or Local)
+- Neon PostgreSQL database account
 
-## Getting Started
+### Installation
 
-### 1. Install Dependencies
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd sifaka
+   ```
 
-```bash
-npm install
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### 2. Configure Environment Variables
+3. **Configure environment variables**
+   
+   Copy `.env.example` to `.env` and fill in your values:
+   ```bash
+   cp .env.example .env
+   ```
 
-**Backend (`apps/api`)**
-Copy `.env.example` to `.env` in `apps/api` and configure your database connection:
+   Required variables:
+   - `DATABASE_URL`: Your Neon PostgreSQL connection string
+   - `NEXTAUTH_URL`: Your application URL (http://localhost:3000 for development)
+   - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+   - `GOOGLE_CLIENT_ID`: Google OAuth client ID
+   - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 
-```bash
-DATABASE_URL="postgresql://user:password@localhost:5432/sifaka_db?schema=public"
-```
+4. **Set up the database**
+   ```bash
+   # Generate Prisma client
+   npx prisma generate
 
-**Frontend (`apps/web`)**
-Copy `.env.example` to `.env.local` in `apps/web` and configure your API URL:
+   # Run migrations
+   npx prisma migrate dev
+   ```
 
-```bash
-NEXT_PUBLIC_API_URL="http://localhost:3001"
-```
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-### 3. Run Database Migrations
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-```bash
-cd apps/api
-npx prisma migrate dev --name init
-```
-
-### 4. Start Development Server
-
-Run both Frontend and Backend simultaneously using TurboRepo:
-
-```bash
-npm run dev
-```
-
-- **Frontend**: [http://localhost:3000](http://localhost:3000)
-- **Backend**: [http://localhost:3001](http://localhost:3001)
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 sifaka/
-├── apps/
-│   ├── api/            # NestJS Backend
-│   └── web/            # Next.js Frontend
-├── packages/           # Shared libraries (UI, Types)
-├── package.json        # Root configuration
-└── turbo.json          # TurboRepo pipeline
+├── app/                  # Next.js App Router pages
+├── components/           # React components
+├── lib/                  # Utility functions and configurations
+├── prisma/              # Database schema and migrations
+├── public/              # Static assets
+├── types/               # TypeScript type definitions
+├── .env                 # Environment variables (not in git)
+├── .env.example         # Environment variables template
+├── next.config.ts       # Next.js configuration
+├── tailwind.config.ts   # Tailwind CSS configuration
+└── tsconfig.json        # TypeScript configuration
 ```
 
-## Features
+## 🛠️ Available Scripts
 
-- 🚀 **Monorepo**: Efficient build system with TurboRepo.
-- 🛠 **Backend**: Robust NestJS architecture with Prisma & TypeORM support.
-- 🎨 **Frontend**: Modern Next.js App Router with Tailwind CSS.
-- 🌍 **Multi-Tenancy**: "Projects" module to manage multiple sites.
-- 🔌 **Database Agnostic**: Connect to Neon, Supabase, or any Postgres DB.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
 
-## Contributing
+## 🗄️ Database
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This project uses [Neon](https://neon.tech) PostgreSQL with Prisma ORM.
 
-## License
+### Prisma Commands
 
-MIT
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Create a migration
+npx prisma migrate dev --name your_migration_name
+
+# Apply migrations
+npx prisma migrate deploy
+
+# Open Prisma Studio
+npx prisma studio
+
+# Pull schema from database
+npx prisma db pull
+
+# Push schema to database (dev only)
+npx prisma db push
+```
+
+## 🔐 Authentication
+
+Authentication is handled by NextAuth.js with support for:
+- Google OAuth
+- Email/Password (via Prisma adapter)
+
+Configure providers in `lib/auth.ts`.
+
+## 🎨 Styling
+
+- **Framework**: Tailwind CSS v4
+- **Components**: Custom components in `/components`
+- **Icons**: Lucide React
+
+## 🤖 AI Features
+
+The application includes AI chat functionality powered by OpenAI.
+
+Configure in your `.env`:
+```env
+OPENAI_API_KEY=your_openai_api_key
+```
+
+## 📝 Environment Variables
+
+See `.env.example` for all required environment variables.
+
+**Security Notes**:
+- Never commit `.env` to version control
+- Keep your `NEXTAUTH_SECRET` secure
+- Protect your database credentials
+- Use environment-specific variables for production
+
+## 🚢 Deployment
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Configure environment variables
+4. Deploy
+
+### Other Platforms
+
+The application can be deployed to any platform that supports Next.js:
+- Netlify
+- Railway
+- Render
+- AWS Amplify
+
+## 📚 Documentation
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Neon Documentation](https://neon.tech/docs)
+
+## 🔧 Troubleshooting
+
+### Database Connection Issues
+
+If you encounter database connection errors:
+1. Verify your `DATABASE_URL` in `.env`
+2. Check Neon dashboard for database status
+3. Ensure your IP is allowed in Neon settings
+4. Run `npx prisma db pull` to verify connection
+
+### Build Errors
+
+If the build fails:
+1. Delete `node_modules` and `.next`
+2. Run `npm install` again
+3. Run `npx prisma generate`
+4. Try `npm run build` again
+
+## 📄 License
+
+[Your License Here]
+
+## 🤝 Contributing
+
+[Your Contributing Guidelines Here]
+
+---
+
+## Migration Notes
+
+This project was migrated from a Turborepo monorepo to a standalone Next.js application.
+
+- **API**: The NestJS API has been moved to `sifaka-api-backup/`. See [API-MIGRATION.md](./API-MIGRATION.md) for setup instructions.
+- **Backup**: Original structure documented in [BACKUP-STRUCTURE.md](./BACKUP-STRUCTURE.md)

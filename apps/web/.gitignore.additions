@@ -1,0 +1,8 @@
+
+# Test files (Neon setup)
+test-*.ts
+test-*.js
+diagnose-*.ts
+check-*.ts
+check-*.js
+*.test.local.ts

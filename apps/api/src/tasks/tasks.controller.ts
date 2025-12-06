@@ -1,61 +1,93 @@
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    Query,
-    HttpCode,
-    HttpStatus,
-} from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskStatus } from '../generated/client';
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from "@nestjs/common";
+import { TasksService } from "./tasks.service";
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  ReorderTasksDto,
+  CreateCommentDto,
+  UpdateCommentDto,
+} from "./dto/task.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 
-@Controller('tasks')
+@Controller("tasks")
 export class TasksController {
-    constructor(private readonly tasksService: TasksService) { }
+  constructor(private readonly tasksService: TasksService) {}
 
-    @Post()
-    @HttpCode(HttpStatus.CREATED)
-    create(@Body() createTaskDto: CreateTaskDto) {
-        // TODO: Get userId from JWT token after auth is implemented
-        const userId = 'temp-user-id';
-        return this.tasksService.create(createTaskDto, userId);
-    }
+  @Post()
+  create(@Body() dto: CreateTaskDto, @CurrentUser("id") userId: string) {
+    return this.tasksService.create(dto, userId);
+  }
 
-    @Get()
-    findAll(
-        @Query('projectId') projectId?: string,
-        @Query('status') status?: TaskStatus,
-    ) {
-        return this.tasksService.findAll(projectId, status);
-    }
+  @Get("my")
+  findMyTasks(@CurrentUser("id") userId: string) {
+    return this.tasksService.findMyTasks(userId);
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.tasksService.findOne(id);
-    }
+  @Get("project/:projectId")
+  findByProject(
+    @Param("projectId") projectId: string,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.tasksService.findByProject(projectId, userId);
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-        return this.tasksService.update(id, updateTaskDto);
-    }
+  @Get(":id")
+  findOne(@Param("id") id: string, @CurrentUser("id") userId: string) {
+    return this.tasksService.findOne(id, userId);
+  }
 
-    @Delete(':id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string) {
-        return this.tasksService.remove(id);
-    }
+  @Patch("reorder")
+  reorder(@Body() dto: ReorderTasksDto, @CurrentUser("id") userId: string) {
+    return this.tasksService.reorder(dto, userId);
+  }
 
-    @Post('reorder')
-    @HttpCode(HttpStatus.OK)
-    updateOrder(
-        @Body() body: { projectId: string; tasks: { id: string; order: number }[] },
-    ) {
-        return this.tasksService.updateOrder(body.projectId, body.tasks);
-    }
+  @Patch(":id")
+  update(
+    @Param("id") id: string,
+    @Body() dto: UpdateTaskDto,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.tasksService.update(id, dto, userId);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string, @CurrentUser("id") userId: string) {
+    return this.tasksService.remove(id, userId);
+  }
+
+  // Commentaires
+  @Post(":id/comments")
+  addComment(
+    @Param("id") taskId: string,
+    @Body() dto: CreateCommentDto,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.tasksService.addComment(taskId, dto, userId);
+  }
+
+  @Patch("comments/:commentId")
+  updateComment(
+    @Param("commentId") commentId: string,
+    @Body() dto: UpdateCommentDto,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.tasksService.updateComment(commentId, dto, userId);
+  }
+
+  @Delete("comments/:commentId")
+  removeComment(
+    @Param("commentId") commentId: string,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.tasksService.removeComment(commentId, userId);
+  }
 }

@@ -1,53 +1,60 @@
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Patch,
-    Param,
-    Delete,
-    Query,
-    HttpCode,
-    HttpStatus,
-} from '@nestjs/common';
-import { ClientsService } from './clients.service';
-import { CreateClientDto } from './dto/create-client.dto';
-import { UpdateClientDto } from './dto/update-client.dto';
-import { ClientStatus } from '../generated/client';
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from "@nestjs/common";
+import { ClientsService } from "./clients.service";
+import { CreateClientDto, UpdateClientDto } from "./dto/client.dto";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
 
-@Controller('clients')
+@Controller("clients")
 export class ClientsController {
-    constructor(private readonly clientsService: ClientsService) { }
+  constructor(private readonly clientsService: ClientsService) {}
 
-    @Post()
-    @HttpCode(HttpStatus.CREATED)
-    create(@Body() createClientDto: CreateClientDto) {
-        // TODO: Get userId from JWT token after auth is implemented
-        const userId = 'temp-user-id';
-        return this.clientsService.create(createClientDto, userId);
-    }
+  @Post()
+  create(@Body() dto: CreateClientDto, @CurrentUser("id") userId: string) {
+    return this.clientsService.create(dto, userId);
+  }
 
-    @Get()
-    findAll(
-        @Query('projectId') projectId?: string,
-        @Query('status') status?: ClientStatus,
-    ) {
-        return this.clientsService.findAll(projectId, status);
-    }
+  @Get()
+  findAll(@CurrentUser("id") userId: string) {
+    return this.clientsService.findAll(userId);
+  }
 
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.clientsService.findOne(id);
-    }
+  @Get("search")
+  search(@Query("q") query: string, @CurrentUser("id") userId: string) {
+    return this.clientsService.search(query || "", userId);
+  }
 
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateClientDto: UpdateClientDto) {
-        return this.clientsService.update(id, updateClientDto);
-    }
+  @Get("project/:projectId")
+  findByProject(
+    @Param("projectId") projectId: string,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.clientsService.findByProject(projectId, userId);
+  }
 
-    @Delete(':id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    remove(@Param('id') id: string) {
-        return this.clientsService.remove(id);
-    }
+  @Get(":id")
+  findOne(@Param("id") id: string, @CurrentUser("id") userId: string) {
+    return this.clientsService.findOne(id, userId);
+  }
+
+  @Patch(":id")
+  update(
+    @Param("id") id: string,
+    @Body() dto: UpdateClientDto,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.clientsService.update(id, dto, userId);
+  }
+
+  @Delete(":id")
+  remove(@Param("id") id: string, @CurrentUser("id") userId: string) {
+    return this.clientsService.remove(id, userId);
+  }
 }
