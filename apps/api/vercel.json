@@ -10,7 +10,7 @@
             "dev": true
         }
     },
-    "ignoreCommand": "exit 0",
+    "ignoreCommand": "exit 1",
     "env": {
         "DATABASE_URL": "@database_url",
         "JWT_SECRET": "@jwt_secret",
