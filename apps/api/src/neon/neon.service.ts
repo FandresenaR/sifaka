@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
-import { PrismaClient } from "../generated/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { neonConfig, PoolConfig } from "@neondatabase/serverless";
 import { getNeonConfig } from "./neon.config";
@@ -11,8 +11,7 @@ neonConfig.webSocketConstructor = ws;
 @Injectable()
 export class NeonService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+  implements OnModuleInit, OnModuleDestroy {
   private isConnected = false;
 
   constructor() {
