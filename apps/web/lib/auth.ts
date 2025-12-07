@@ -75,7 +75,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 jours
     },
-    basePath: "/api/auth",
+    basePath: "/auth",
     debug: false,
     trustHost: true,
     useSecureCookies: process.env.NODE_ENV === 'production',
