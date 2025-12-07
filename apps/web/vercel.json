@@ -4,11 +4,5 @@
     "devCommand": "npm run dev",
     "installCommand": "npm install",
     "framework": "nextjs",
-    "outputDirectory": ".next",
-    "git": {
-        "deploymentEnabled": {
-            "main": true,
-            "dev": true
-        }
-    }
+    "outputDirectory": ".next"
 }

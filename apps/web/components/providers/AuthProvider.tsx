@@ -8,7 +8,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         <SessionProvider
             refetchInterval={5 * 60} // Refetch session every 5 minutes
             refetchOnWindowFocus={true}
-            basePath="/auth"
         >
             <TokenSync />
             {children}
