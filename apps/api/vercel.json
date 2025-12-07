@@ -9,5 +9,6 @@
             "main": true,
             "dev": true
         }
-    }
+    },
+    "ignoreCommand": "exit 0"
 }

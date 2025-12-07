@@ -1,7 +1,7 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-    "buildCommand": "cd ../.. && npx turbo run build --filter=@sifaka/web",
-    "devCommand": "cd ../.. && npx turbo run dev --filter=@sifaka/web",
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
     "installCommand": "npm install",
     "framework": "nextjs",
     "outputDirectory": ".next",
@@ -11,11 +11,5 @@
             "dev": true
         }
     },
-    "env": {
-        "DATABASE_URL": "@DATABASE_URL",
-        "NEXTAUTH_SECRET": "@NEXTAUTH_SECRET",
-        "NEXTAUTH_URL": "@NEXTAUTH_URL",
-        "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET"
-    }
+    "ignoreCommand": "exit 0"
 }
