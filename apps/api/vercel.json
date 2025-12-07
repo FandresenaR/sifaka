@@ -12,10 +12,10 @@
     },
     "ignoreCommand": "exit 0",
     "env": {
-        "DATABASE_URL": "@database_url",
-        "JWT_SECRET": "@jwt_secret",
-        "GOOGLE_CLIENT_ID": "@google_client_id",
-        "GOOGLE_CLIENT_SECRET": "@google_client_secret",
+        "DATABASE_URL": "@DATABASE_URL",
+        "JWT_SECRET": "@JWT_SECRET",
+        "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET",
         "PORT": "3001"
     }
 }
