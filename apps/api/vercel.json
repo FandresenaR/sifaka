@@ -10,12 +10,5 @@
             "dev": true
         }
     },
-    "ignoreCommand": "exit 0",
-    "env": {
-        "DATABASE_URL": "@DATABASE_URL",
-        "JWT_SECRET": "@JWT_SECRET",
-        "GOOGLE_CLIENT_ID": "@GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET": "@GOOGLE_CLIENT_SECRET",
-        "PORT": "3001"
-    }
+    "ignoreCommand": "exit 0"
 }
