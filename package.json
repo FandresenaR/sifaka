@@ -2,6 +2,7 @@
   "name": "sifaka",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10",
   "description": "Sifaka CMS - TurboRepo Monorepo",
   "scripts": {
     "dev": "turbo run dev --parallel",
