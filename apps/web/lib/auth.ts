@@ -15,7 +15,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         Google({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientId: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
             authorization: {
                 params: {
@@ -40,12 +40,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.picture = (profile as any).picture
                 token.role = profile.email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER"
             }
-            
+
             // S'assurer que le role est toujours défini
             if (!token.role && token.email) {
                 token.role = token.email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER"
             }
-            
+
             return token
         },
         async session({ session, token }) {
