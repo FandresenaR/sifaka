@@ -21,16 +21,36 @@ export class PrismaService
 
   constructor() {
     // Récupère la configuration depuis les variables d'environnement séparées
-    const host = process.env.NEON_HOST;
-    const database = process.env.NEON_DATABASE;
-    const user = process.env.NEON_USER;
-    const password = process.env.NEON_PASSWORD;
+    // Récupère la configuration depuis les variables d'environnement
+    let host = process.env.NEON_HOST;
+    let database = process.env.NEON_DATABASE;
+    let user = process.env.NEON_USER;
+    let password = process.env.NEON_PASSWORD;
     const ssl = process.env.NEON_SSL !== "false";
     const poolSize = parseInt(process.env.NEON_POOL_SIZE || "10", 10);
 
+    // Fallback: Si la config éclatée est manquante, essayer de parser DATABASE_URL
+    if (!host || !database || !user || !password) {
+      const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+      if (connectionString) {
+        try {
+          // Format attendu: postgres://user:password@host:port/database
+          const urlKey = new URL(connectionString);
+          host = urlKey.hostname;
+          database = urlKey.pathname.replace(/^\//, ""); // Enlever le slash initial
+          user = urlKey.username;
+          password = urlKey.password;
+
+          console.log(`ℹ️ Using configuration parsed from DATABASE_URL for ${host}`);
+        } catch (e) {
+          console.error("❌ Failed to parse DATABASE_URL:", e);
+        }
+      }
+    }
+
     if (!host || !database || !user || !password) {
       throw new Error(
-        "Missing Neon database configuration. Please set NEON_HOST, NEON_DATABASE, NEON_USER, and NEON_PASSWORD environment variables.",
+        "Missing Neon database configuration. Please set NEON_HOST, NEON_DATABASE, NEON_USER, and NEON_PASSWORD environment variables, or provide a valid DATABASE_URL.",
       );
     }
 
