@@ -25,7 +25,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Ne rien faire pendant le chargement
     if (status === "loading") return
-    
+
     // Si authentifié, charger les stats
     if (status === "authenticated" && session?.user) {
       fetchStats()
@@ -37,15 +37,15 @@ export default function AdminDashboard() {
     try {
       setStatsLoading(true)
       setError(null)
-      
+
       // Appel API avec authentication automatique
-      const response = await api.get("/users")
+      const response = await api.get("/api/users")
       const users = Array.isArray(response) ? response : response.data || []
-      
+
       const userCount = users.filter((u: any) => u.role === "USER").length
       const adminCount = users.filter((u: any) => u.role === "ADMIN").length
       const superAdminCount = users.filter((u: any) => u.role === "SUPER_ADMIN").length
-      
+
       setStats({ users: userCount, admins: adminCount, superAdmins: superAdminCount })
     } catch (err) {
       console.error("Erreur chargement stats:", err)
@@ -184,10 +184,10 @@ export default function AdminDashboard() {
         <StatCard title="Utilisateurs" value={stats.users.toString()} change="+0%" />
         <StatCard title="Admins" value={stats.admins.toString()} change="+0%" />
         <StatCard title="Super Admins" value={stats.superAdmins.toString()} change="+0%" />
-        <StatCard 
-          title="Total" 
-          value={(stats.users + stats.admins + stats.superAdmins).toString()} 
-          change="+0%" 
+        <StatCard
+          title="Total"
+          value={(stats.users + stats.admins + stats.superAdmins).toString()}
+          change="+0%"
         />
       </div>
 
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
           {modules.map((module) => {
             const Icon = module.icon
             const isDisabled = module.disabled || false
-            
+
             if (isDisabled) {
               return (
                 <div
