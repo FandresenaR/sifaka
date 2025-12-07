@@ -23,15 +23,19 @@ export default function AdminDashboard() {
   const user = session?.user
 
   useEffect(() => {
-    console.log("AdminDashboard State:", { status, hasUser: !!session?.user, statsLoading });
-    // Ne rien faire pendant le chargement
+    // Debug log
+    console.log("AdminDashboard State:", JSON.stringify({ status, hasUser: !!session?.user, statsLoading }, null, 2));
+
+    // Ne rien faire pendant le chargement de session
     if (status === "loading") return
 
     // Si authentifié, charger les stats
     if (status === "authenticated" && session?.user) {
       fetchStats()
+    } else {
+      // Si pas authentifié, arrêter le chargement pour afficher la redirection/erreur
+      setStatsLoading(false)
     }
-    // Note: La protection est gérée par le middleware, pas besoin de rediriger ici
   }, [status, session])
 
   const fetchStats = async () => {
@@ -152,23 +156,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header avec Logout */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Dashboard Admin
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Bienvenue {user.name} ({user.email})
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Déconnexion
-        </button>
+      {/* Content Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Dashboard Admin
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Bienvenue dans votre espace de gestion, {user.name}
+        </p>
       </div>
 
       {/* Error Message */}
