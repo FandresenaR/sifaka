@@ -1,6 +1,43 @@
 import { PrismaClient, UserRole, ProjectStatus, TaskStatus, Priority, MemberRole } from '@prisma/client';
 
-const prisma = new PrismaClient();
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { neonConfig, PoolConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// Configure Neon WebSocket
+neonConfig.webSocketConstructor = ws;
+neonConfig.useSecureWebSocket = true;
+neonConfig.pipelineConnect = "password";
+
+// Setup connection string parsing and adapter
+const connectionString = process.env.DATABASE_URL;
+let poolConfig: PoolConfig;
+
+if (process.env.NEON_HOST && process.env.NEON_USER && process.env.NEON_PASSWORD && process.env.NEON_DATABASE) {
+    poolConfig = {
+        host: process.env.NEON_HOST,
+        database: process.env.NEON_DATABASE,
+        user: process.env.NEON_USER,
+        password: process.env.NEON_PASSWORD,
+        ssl: true,
+        max: 1,
+    };
+} else if (connectionString) {
+    const urlKey = new URL(connectionString);
+    poolConfig = {
+        host: urlKey.hostname,
+        database: urlKey.pathname.replace(/^\//, ""),
+        user: urlKey.username,
+        password: urlKey.password,
+        ssl: true,
+        max: 1
+    };
+} else {
+    throw new Error("Missing database configuration for seeding");
+}
+
+const adapter = new PrismaNeon(poolConfig);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
     console.log('🌱 Starting database seed...');
