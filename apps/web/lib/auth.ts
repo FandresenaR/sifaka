@@ -39,6 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.name = profile.name
                 token.picture = (profile as any).picture
                 token.role = profile.email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER"
+                token.id_token = account.id_token // Capture l'ID Token de Google
             }
 
             // S'assurer que le role est toujours défini
@@ -55,6 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.email = token.email as string
                 session.user.name = token.name as string
                 session.user.image = token.picture as string
+                session.user.id_token = token.id_token as string // Expose l'ID Token
             }
             return session
         },
@@ -88,6 +90,7 @@ declare module "next-auth" {
             name?: string | null
             email?: string | null
             image?: string | null
+            id_token?: string // Ajout du champ id_token
         }
     }
 
@@ -101,5 +104,6 @@ declare module "@auth/core/jwt" {
         id?: string
         role?: UserRole
         picture?: string
+        id_token?: string // Ajout du champ id_token
     }
 }
