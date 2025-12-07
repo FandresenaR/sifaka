@@ -13,11 +13,27 @@ interface Stats {
   superAdmins: number
 }
 
+interface Project {
+  id: string
+  name: string
+  slug: string
+  type: string
+  status: string
+  createdAt: string
+  owner?: {
+    name: string | null
+    email: string | null
+    image: string | null
+  }
+}
+
 export default function AdminDashboard() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [stats, setStats] = useState<Stats>({ users: 0, admins: 0, superAdmins: 0 })
+  const [projects, setProjects] = useState<Project[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
+  const [projectsLoading, setProjectsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
 
@@ -28,12 +44,14 @@ export default function AdminDashboard() {
     // Ne rien faire pendant le chargement de session
     if (status === "loading") return
 
-    // Si authentifié, charger les stats
+    // Si authentifié, charger les stats et projets
     if (status === "authenticated" && session?.user) {
       fetchStats()
+      fetchProjects()
     } else {
       // Si pas authentifié, arrêter le chargement
       setStatsLoading(false)
+      setProjectsLoading(false)
     }
   }, [status, session])
 
@@ -75,6 +93,26 @@ export default function AdminDashboard() {
     } finally {
       setStatsLoading(false)
     }
+  }
+
+  const fetchProjects = async () => {
+    try {
+      setProjectsLoading(true)
+      const response = await fetch("/api/projects")
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(Array.isArray(data) ? data : [])
+      }
+    } catch (err) {
+      console.error("Erreur chargement projets:", err)
+    } finally {
+      setProjectsLoading(false)
+    }
+  }
+
+  const handleProjectCreated = (newProject: Project) => {
+    setProjects(prev => [newProject, ...prev])
+    setShowNewProjectModal(false)
   }
 
   const handleLogout = async () => {
@@ -208,10 +246,54 @@ export default function AdminDashboard() {
         <StatCard title="Admins" value={stats.admins.toString()} change="+0%" />
         <StatCard title="Super Admins" value={stats.superAdmins.toString()} change="+0%" />
         <StatCard
-          title="Total"
-          value={(stats.users + stats.admins + stats.superAdmins).toString()}
+          title="Projets"
+          value={projects.length.toString()}
           change="+0%"
         />
+      </div>
+
+      {/* Mes Projets */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Mes Projets
+          </h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {projects.length} projet{projects.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        
+        {projectsLoading ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-3 text-gray-600 dark:text-gray-400">Chargement des projets...</p>
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center border border-gray-200 dark:border-gray-700">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Rocket className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Aucun projet pour le moment
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Créez votre premier projet pour commencer à gérer votre contenu
+            </p>
+            <button
+              onClick={() => setShowNewProjectModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Créer un projet
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modules Grid */}
@@ -282,16 +364,20 @@ export default function AdminDashboard() {
 
       {/* Modal Nouveau Projet */}
       {showNewProjectModal && (
-        <NewProjectModal onClose={() => setShowNewProjectModal(false)} />
+        <NewProjectModal 
+          onClose={() => setShowNewProjectModal(false)} 
+          onCreated={handleProjectCreated}
+        />
       )}
     </div>
   )
 }
 
-function NewProjectModal({ onClose }: { onClose: () => void }) {
+function NewProjectModal({ onClose, onCreated }: { onClose: () => void; onCreated: (project: Project) => void }) {
   const [projectName, setProjectName] = useState("")
   const [projectType, setProjectType] = useState("ecommerce")
   const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const projectTypes = [
     { id: "ecommerce", name: "E-commerce", description: "Boutique en ligne avec produits et paiements", icon: "🛒" },
@@ -305,14 +391,33 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
     if (!projectName.trim()) return
     
     setCreating(true)
-    // TODO: Appel API pour créer le projet
-    console.log("Création du projet:", { name: projectName, type: projectType })
+    setError(null)
     
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: projectName,
+          type: projectType,
+        }),
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Erreur lors de la création")
+      }
+      
+      const newProject = await response.json()
+      onCreated(newProject)
+    } catch (err) {
+      console.error("Erreur création projet:", err)
+      setError(err instanceof Error ? err.message : "Erreur lors de la création du projet")
+    } finally {
       setCreating(false)
-      onClose()
-      // TODO: Rediriger vers le nouveau projet
-    }, 1000)
+    }
   }
 
   return (
@@ -337,6 +442,13 @@ function NewProjectModal({ onClose }: { onClose: () => void }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+              <p className="text-red-700 dark:text-red-300 text-sm">⚠️ {error}</p>
+            </div>
+          )}
+
           {/* Nom du projet */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -424,5 +536,71 @@ function StatCard({ title, value, change }: { title: string; value: string; chan
         </span>
       </div>
     </div>
+  )
+}
+
+function ProjectCard({ project }: { project: { id: string; name: string; slug: string; type: string; status: string; createdAt: string; owner?: { name: string | null; email: string | null; image: string | null } } }) {
+  const typeIcons: Record<string, string> = {
+    ECOMMERCE: "🛒",
+    BLOG: "📝",
+    PORTFOLIO: "🎨",
+    LANDING: "🚀",
+    CUSTOM: "⚙️",
+  }
+
+  const typeColors: Record<string, string> = {
+    ECOMMERCE: "from-blue-500 to-cyan-500",
+    BLOG: "from-purple-500 to-pink-500",
+    PORTFOLIO: "from-orange-500 to-yellow-500",
+    LANDING: "from-green-500 to-emerald-500",
+    CUSTOM: "from-gray-500 to-slate-500",
+  }
+
+  const statusBadges: Record<string, { bg: string; text: string; label: string }> = {
+    ACTIVE: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400", label: "Actif" },
+    ARCHIVED: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-700 dark:text-gray-400", label: "Archivé" },
+    DRAFT: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400", label: "Brouillon" },
+  }
+
+  const icon = typeIcons[project.type] || "📁"
+  const color = typeColors[project.type] || "from-gray-500 to-slate-500"
+  const status = statusBadges[project.status] || statusBadges.DRAFT
+  const createdDate = new Date(project.createdAt).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+
+  return (
+    <Link
+      href={`/admin/projects/${project.slug}`}
+      className="group bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className={`w-10 h-10 bg-gradient-to-br ${color} rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform`}>
+          {icon}
+        </div>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
+          {status.label}
+        </span>
+      </div>
+      
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate">
+        {project.name}
+      </h3>
+      
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+        Créé le {createdDate}
+      </p>
+      
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+          {project.type.toLowerCase()}
+        </span>
+        <span className="text-blue-600 dark:text-blue-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          Ouvrir →
+        </span>
+      </div>
+    </Link>
   )
 }
