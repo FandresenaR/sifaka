@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const user = session?.user
 
   useEffect(() => {
+    console.log("AdminDashboard State:", { status, hasUser: !!session?.user, statsLoading });
     // Ne rien faire pendant le chargement
     if (status === "loading") return
 
