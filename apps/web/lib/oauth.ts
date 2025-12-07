@@ -5,7 +5,8 @@
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// Normalise l'URL de base en supprimant le slash final
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "");
 const REDIRECT_URI = `${typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"}/auth/callback`;
 
 /**

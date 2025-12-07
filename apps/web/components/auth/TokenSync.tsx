@@ -4,7 +4,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 import { setToken, getToken } from "@/lib/oauth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// Normalise l'URL de base en supprimant le slash final
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "");
 
 export function TokenSync() {
     const { data: session } = useSession();
