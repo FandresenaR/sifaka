@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@prisma/client', '@neondatabase/serverless'],
+  turbopack: {
+    root: ".",
+  },
   images: {
     remotePatterns: [
       {
