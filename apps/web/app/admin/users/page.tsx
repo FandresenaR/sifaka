@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import InviteUserModal from "@/components/admin/users/InviteUserModal"
 import { 
   Users, 
   Shield, 
@@ -43,6 +45,7 @@ export default function UsersPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole | "ALL">("ALL")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newRole, setNewRole] = useState<UserRole>("USER")
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
@@ -61,21 +64,15 @@ export default function UsersPage() {
       setLoading(true)
       setError(null)
       
-      // Pour l'instant, on simule les données car l'API n'est pas encore connectée
-      // TODO: Remplacer par un appel API réel
-      const mockUsers: UserData[] = [
-        {
-          id: "1",
-          name: session?.user?.name || "Super Admin",
-          email: session?.user?.email || SUPER_ADMIN_EMAIL,
-          image: session?.user?.image || null,
-          role: "SUPER_ADMIN",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ]
+      const response = await fetch("/api/users")
       
-      setUsers(mockUsers)
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Erreur lors du chargement")
+      }
+      
+      const data = await response.json()
+      setUsers(data.users)
     } catch (err) {
       console.error("Erreur chargement utilisateurs:", err)
       setError(err instanceof Error ? err.message : "Erreur lors du chargement")
@@ -89,15 +86,35 @@ export default function UsersPage() {
     const user = users.find(u => u.id === userId)
     if (user?.email === SUPER_ADMIN_EMAIL) {
       setError("Le rôle du Super Admin principal ne peut pas être modifié")
+      setTimeout(() => setError(null), 3000)
+      setEditingUser(null)
       return
     }
 
     try {
-      // TODO: Appel API pour modifier le rôle
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Erreur lors de la modification")
+      }
+
+      const data = await response.json()
+      
+      // Mettre à jour localement
       setUsers(users.map(u => 
-        u.id === userId ? { ...u, role } : u
+        u.id === userId ? { ...u, role: data.user.role } : u
       ))
       setEditingUser(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la modification du rôle")
+      setTimeout(() => setError(null), 3000)
+    }
+  }
     } catch (err) {
       setError("Erreur lors de la modification du rôle")
     }
@@ -107,19 +124,36 @@ export default function UsersPage() {
     const user = users.find(u => u.id === userId)
     if (user?.email === SUPER_ADMIN_EMAIL) {
       setError("Le Super Admin principal ne peut pas être supprimé")
+      setTimeout(() => setError(null), 3000)
       return
     }
 
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ? Tous ses projets seront également supprimés.")) {
       return
     }
 
     try {
-      // TODO: Appel API pour supprimer
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Erreur lors de la suppression")
+      }
+
+      // Retirer l'utilisateur de la liste
       setUsers(users.filter(u => u.id !== userId))
     } catch (err) {
-      setError("Erreur lors de la suppression")
+      setError(err instanceof Error ? err.message : "Erreur lors de la suppression")
+      setTimeout(() => setError(null), 3000)
     }
+  }
+
+  const handleUserInvited = (newUser: UserData) => {
+    // Ajouter le nouvel utilisateur à la liste
+    setUsers([newUser, ...users])
+    setShowInviteModal(false)
   }
 
   // Filtrage des utilisateurs
@@ -170,6 +204,14 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <InviteUserModal
+          onClose={() => setShowInviteModal(false)}
+          onUserInvited={handleUserInvited}
+        />
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -184,7 +226,7 @@ export default function UsersPage() {
 
         {isSuperAdmin && (
           <button
-            onClick={() => {/* TODO: Modal d'invitation */}}
+            onClick={() => setShowInviteModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -317,7 +359,10 @@ export default function UsersPage() {
                 paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
+                      <Link
+                        href={`/admin/users/${user.id}`}
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                      >
                         {user.image ? (
                           <img
                             src={user.image}
@@ -332,7 +377,7 @@ export default function UsersPage() {
                         <span className="font-medium text-gray-900 dark:text-white">
                           {user.name || "Sans nom"}
                         </span>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-gray-400">
                       {user.email}

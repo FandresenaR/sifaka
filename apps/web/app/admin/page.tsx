@@ -60,24 +60,27 @@ export default function AdminDashboard() {
       setStatsLoading(true)
       setError(null)
 
-      // Essayer de charger depuis l'API
-      try {
-        const response = await api.get("/api/users")
-        const users = Array.isArray(response) ? response : response.data || []
+      // Charger les utilisateurs depuis l'API
+      const response = await fetch("/api/users")
+      
+      if (response.ok) {
+        const data = await response.json()
+        const users = data.users || []
 
         const userCount = users.filter((u: any) => u.role === "USER").length
         const adminCount = users.filter((u: any) => u.role === "ADMIN").length
         const superAdminCount = users.filter((u: any) => u.role === "SUPER_ADMIN").length
 
         setStats({ users: userCount, admins: adminCount, superAdmins: superAdminCount })
-      } catch (apiErr) {
-        console.warn("API non disponible, utilisation des données de session:", apiErr)
-        
-        // Fallback: au minimum compter l'utilisateur actuel
+      } else {
+        // Fallback: compter seulement l'utilisateur actuel
         const currentUserRole = session?.user?.role
         setStats({
           users: currentUserRole === "USER" ? 1 : 0,
           admins: currentUserRole === "ADMIN" ? 1 : 0,
+          superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0,
+        })
+      }
           superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0
         })
       }
