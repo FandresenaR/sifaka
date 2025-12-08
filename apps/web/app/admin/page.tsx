@@ -81,9 +81,6 @@ export default function AdminDashboard() {
           superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0,
         })
       }
-          superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0
-        })
-      }
     } catch (err) {
       console.error("Erreur chargement stats:", err)
       // Fallback silencieux avec l'utilisateur courant
