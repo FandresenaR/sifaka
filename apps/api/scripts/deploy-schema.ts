@@ -203,6 +203,19 @@ async function main() {
       );
     `);
 
+        // MIGRATIONS - Add missing columns to existing tables
+        console.log("🔄 Checking for missing columns...");
+        
+        try {
+            // Add supabaseId to User if missing
+            await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "supabaseId" TEXT;`);
+            await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "avatar" TEXT;`);
+            await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastLoginAt" TIMESTAMP(3);`);
+            console.log("✅ User table columns updated");
+        } catch (e) {
+            console.log("⚠️  User columns already exist or error:", e);
+        }
+
         // INDICES & CONSTRAINTS (executed one by one to ensure safety)
 
         // User

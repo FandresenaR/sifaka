@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import * as api from "@/lib/api-client"
-import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket } from "lucide-react"
+import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban } from "lucide-react"
 
 interface Stats {
   users: number
@@ -120,6 +120,14 @@ export default function AdminDashboard() {
   }
 
   const modules = [
+    {
+      title: "Mes Projets",
+      description: "Gérez vos projets CMS et configurations",
+      icon: FolderKanban,
+      href: "/admin/projects",
+      color: "from-violet-500 to-purple-500",
+      stats: `${projects.length} projet${projects.length > 1 ? 's' : ''}`
+    },
     {
       title: "Gestion de Produits",
       description: "Catalogue, prix, inventaire et catégories",
