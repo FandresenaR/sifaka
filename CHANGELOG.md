@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.2.0] - 2024-12-08
+
+### Added - Multi-Tenant Project Architecture 🎯
+- **Project-Scoped Data Management**: Each project now has isolated Products, Blog Posts, and Media
+  - Added `projectId` foreign key to `Product`, `BlogPost` models (required)
+  - Added `projectId` to `Media` model (optional - allows shared media)
+  - Projects can configure enabled modules via `modules` JSON field
+  - Cascade deletion: deleting a project removes all associated content
+- **Project Management UI**
+  - `/admin/projects` - List view with status indicators and type icons
+  - `/admin/projects/[slug]` - Settings page with full CRUD operations
+  - Project dashboard card in admin home
+  - API routes: GET, POST, PATCH, DELETE for projects
+- **Enhanced User Management**
+  - Automatic user upsert on OAuth sign-in (fixes foreign key errors)
+  - User records persisted to database with NextAuth PrismaAdapter
+  - Super admin auto-upgrade for `fandresenar6@gmail.com`
+
+### Changed
+- **Breaking**: `Product.projectId` now **required** - all products must belong to a project
+- **Breaking**: `BlogPost.projectId` now **required** - all blog posts must belong to a project
+- `Media.projectId` is **optional** - media can be project-specific or shared
+- Improved project deletion button visibility (red background with border)
+- Updated migration workflow documentation for both API and Web apps
+
+### Fixed
+- Foreign key constraint violations on project creation (User records now created on sign-in)
+- Missing columns in API database (`supabaseId`, `avatar`, `lastLoginAt`)
+- Prisma schema deployment for Neon with driver adapters
+- Connection timeouts in restricted network environments
+
+### Technical
+- **Migrations**: 
+  - `20241207000001_add_project_model` - Initial project schema
+  - `add_multi_tenant_support` - Multi-tenant foreign keys
+- **API Schema**: Deploy via `npx tsx scripts/deploy-schema.ts` (Neon WebSocket)
+- **Web Schema**: Standard Prisma migrations with `npx prisma migrate dev`
+
+### Migration Guide
+⚠️ **Existing Data**: Assign orphaned content to a project:
+
+```sql
+-- Create default project (update ownerId with your user ID)
+INSERT INTO "Project" (id, name, slug, type, status, "ownerId", "createdAt", "updatedAt")
+VALUES ('default-proj', 'Legacy Content', 'legacy', 'CUSTOM', 'ACTIVE', 'YOUR_USER_ID', NOW(), NOW());
+
+-- Assign existing content
+UPDATE "Product" SET "projectId" = 'default-proj' WHERE "projectId" IS NULL;
+UPDATE "BlogPost" SET "projectId" = 'default-proj' WHERE "projectId" IS NULL;
+```
+
 ## [Unreleased] - 2025-12-08
 
 ### Database & Prisma

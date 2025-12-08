@@ -97,8 +97,12 @@ model Media {
   title       String?
   description String?
   tags        String[]
+  projectId   String?  // Nullable pour médias partagés entre projets
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
 }
 
 // Products
@@ -117,11 +121,14 @@ model Product {
   featured       Boolean  @default(false)
   isNew          Boolean  @default(false)
   comingSoon     Boolean  @default(false)
+  projectId      String
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   @@index([slug])
   @@index([category])
+  @@index([projectId])
 }
 
 // Blog Posts
@@ -135,12 +142,15 @@ model BlogPost {
   published   Boolean  @default(false)
   tags        String[]
   authorId    String?
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   publishedAt DateTime?
 
   @@index([slug])
   @@index([published])
+  @@index([projectId])
 }
 
 // Projects (CMS Projects)
@@ -151,8 +161,12 @@ model Project {
   type        ProjectType   @default(CUSTOM)
   description String?
   status      ProjectStatus @default(ACTIVE)
+  modules     Json?         // Configuration des modules activés { products: true, blog: true, media: true }
   ownerId     String
   owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products    Product[]
+  blogPosts   BlogPost[]
+  media       Media[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
