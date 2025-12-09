@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, RefreshCw, Menu } from 'lucide-react'
+import { MessageCircle, X, Send, RefreshCw, Menu, Zap } from 'lucide-react'
 import { MessageContent } from './MessageContent'
 
 interface Message {
@@ -30,6 +30,8 @@ export function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingModels, setIsLoadingModels] = useState(false)
   const [apiKeyError, setApiKeyError] = useState<string | null>(null)
+  const [moduleGenerationMode, setModuleGenerationMode] = useState(false)
+  const [showModuleInfo, setShowModuleInfo] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Charger les modèles au démarrage
@@ -101,6 +103,9 @@ export function ChatWidget() {
             content: m.content,
           })),
           model: selectedModel,
+          temperature: moduleGenerationMode ? 0.3 : 0.7, // Plus déterministe en mode génération
+          maxTokens: moduleGenerationMode ? 3000 : 2048,
+          systemPrompt: moduleGenerationMode, // Utiliser le prompt système si mode génération
         }),
       })
 
@@ -147,26 +152,54 @@ export function ChatWidget() {
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 h-[600px] bg-white dark:bg-gray-800 rounded-xl shadow-2xl flex flex-col z-40 border border-gray-200 dark:border-gray-700">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-xl flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="font-bold text-lg">Assistant IA</h3>
-              <p className="text-sm text-blue-100">Connecté via OpenRouter</p>
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-xl">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">Assistant IA</h3>
+                <p className="text-sm text-blue-100">Connecté via OpenRouter</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowModuleInfo(!showModuleInfo)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    moduleGenerationMode ? 'bg-blue-500/50' : 'hover:bg-blue-500/50'
+                  }`}
+                  aria-label="Mode génération de modules"
+                  title="Activer le mode génération de modules"
+                >
+                  <Zap size={18} />
+                </button>
+                <button
+                  onClick={handleRefreshModels}
+                  disabled={isLoadingModels}
+                  className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors disabled:opacity-50"
+                  aria-label="Actualiser les modèles"
+                  title="Actualiser les modèles IA"
+                >
+                  <RefreshCw size={18} className={isLoadingModels ? 'animate-spin' : ''} />
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleRefreshModels}
-              disabled={isLoadingModels}
-              className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors disabled:opacity-50"
-              aria-label="Actualiser les modèles"
-              title="Actualiser les modèles IA"
-            >
-              <RefreshCw size={18} className={isLoadingModels ? 'animate-spin' : ''} />
-            </button>
+            
+            {/* Mode Génération Info */}
+            {showModuleInfo && (
+              <div className="mt-3 p-3 bg-blue-500/20 rounded-lg text-sm border border-blue-300/30">
+                <p className="font-semibold mb-2">🚀 Mode Génération de Modules</p>
+                <p className="text-xs text-blue-50 mb-2">
+                  Demandez à l'IA de créer des modules de données avec schémas, validations et routes API.
+                </p>
+                <p className="text-xs text-blue-50/80">
+                  ✓ Vous pouvez : créer schémas, relations, validations, routes API<br />
+                  ✗ L'IA ne peut pas : UI, logique métier, intégrations externes
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sélecteur de modèle */}
-          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 space-y-3">
             {apiKeyError && (
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-3 flex items-start gap-2">
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg flex items-start gap-2">
                 <span className="text-yellow-600 dark:text-yellow-400 text-sm">⚠️</span>
                 <div className="text-sm text-yellow-800 dark:text-yellow-400">
                   <p className="font-medium">{apiKeyError}</p>
@@ -178,7 +211,29 @@ export function ChatWidget() {
                 </div>
               </div>
             )}
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            
+            {/* Mode Génération Toggle */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={moduleGenerationMode}
+                  onChange={(e) => setModuleGenerationMode(e.target.checked)}
+                  className="w-4 h-4 rounded accent-blue-600"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Mode Génération IA
+                </span>
+              </label>
+              {moduleGenerationMode && (
+                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                  <Zap size={12} className="inline mr-1" />
+                  Actif
+                </span>
+              )}
+            </div>
+            
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Modèle IA {isLoadingModels && '(Chargement...)'}
             </label>
             <select

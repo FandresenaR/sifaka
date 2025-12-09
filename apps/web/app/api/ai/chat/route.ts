@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { MODULE_GENERATION_SYSTEM_PROMPT } from '@/lib/module-generation-prompt'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -10,6 +11,8 @@ interface ChatRequest {
   model: string
   temperature?: number
   maxTokens?: number
+  systemPrompt?: boolean // Si true, ajouter le prompt système pour la génération de modules
+  projectId?: string // ID du projet pour la création de modules
 }
 
 export async function POST(request: NextRequest) {
@@ -47,6 +50,19 @@ export async function POST(request: NextRequest) {
       content: msg.content,
     }))
 
+    // Construire les paramètres pour OpenRouter
+    const requestBody: any = {
+      model: body.model,
+      messages,
+      temperature: body.temperature || 0.7,
+      max_tokens: body.maxTokens || 2048,
+    }
+
+    // Ajouter le système prompt si activé (mode génération de modules)
+    if (body.systemPrompt) {
+      requestBody.system = MODULE_GENERATION_SYSTEM_PROMPT
+    }
+
     // Appeler OpenRouter API
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -55,12 +71,7 @@ export async function POST(request: NextRequest) {
         'HTTP-Referer': `${request.headers.get('origin') || 'http://localhost:3000'}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: body.model,
-        messages,
-        temperature: body.temperature || 0.7,
-        max_tokens: body.maxTokens || 1024,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
     if (!response.ok) {
