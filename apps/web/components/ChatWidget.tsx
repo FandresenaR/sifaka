@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, RefreshCw, Menu } from 'lucide-react'
+import { MessageContent } from './MessageContent'
 
 interface Message {
   id: string
@@ -223,15 +224,19 @@ export function ChatWidget() {
                 }`}
               >
                 <div
-                  className={`max-w-xs px-4 py-2 rounded-lg ${
+                  className={`max-w-md px-4 py-2 rounded-lg ${
                     message.role === 'user'
                       ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-br-none'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-none'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap break-words">
-                    {message.content}
-                  </p>
+                  {message.role === 'user' ? (
+                    <p className="text-sm whitespace-pre-wrap break-words">
+                      {message.content}
+                    </p>
+                  ) : (
+                    <MessageContent content={message.content} />
+                  )}
                   <span className="text-xs opacity-70 mt-1 block">
                     {message.timestamp.toLocaleTimeString('fr-FR', {
                       hour: '2-digit',

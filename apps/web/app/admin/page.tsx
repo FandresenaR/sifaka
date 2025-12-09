@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import * as api from "@/lib/api-client"
-import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban } from "lucide-react"
+import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban, Zap } from "lucide-react"
 
 interface Stats {
   users: number
@@ -135,6 +135,14 @@ export default function AdminDashboard() {
       href: "/admin/products",
       color: "from-blue-500 to-cyan-500",
       stats: "0 produits"
+    },
+    {
+      title: "Modules IA",
+      description: "Modules générés dynamiquement par l'IA",
+      icon: Zap,
+      href: "/admin/modules",
+      color: "from-amber-500 to-orange-500",
+      stats: "Gérés via chat"
     },
     {
       title: "Gestion de Blog",
