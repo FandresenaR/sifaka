@@ -40,13 +40,24 @@ export async function GET(
     }
 
     // Charger les modules du projet
-    const modules = await prisma.projectInstalledModule.findMany({
-      where: { projectId: project.id },
-      include: {
-        module: true,
-      },
-      orderBy: { installedAt: 'desc' },
-    })
+    let modules: any[] = []
+    try {
+      modules = await prisma.projectInstalledModule.findMany({
+        where: { projectId: project.id },
+        include: {
+          module: true,
+        },
+        orderBy: { installedAt: 'desc' },
+      })
+    } catch (dbError: any) {
+      // Si la table n'existe pas encore (P2021), retourner un tableau vide avec avertissement
+      if (dbError?.code === 'P2021') {
+        console.warn('ProjectInstalledModule table does not exist yet. Migration pending.')
+        modules = []
+      } else {
+        throw dbError
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -55,7 +66,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching project modules:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Erreur lors du chargement des modules. Veuillez réessayer plus tard.' },
       { status: 500 }
     )
   }
@@ -119,14 +130,22 @@ export async function POST(
     }
 
     // Vérifier que le module n'est pas déjà installé
-    const existing = await prisma.projectInstalledModule.findUnique({
-      where: {
-        projectId_moduleId: {
-          projectId: project.id,
-          moduleId,
+    let existing = null
+    try {
+      existing = await prisma.projectInstalledModule.findUnique({
+        where: {
+          projectId_moduleId: {
+            projectId: project.id,
+            moduleId,
+          },
         },
-      },
-    })
+      })
+    } catch (dbError: any) {
+      // Si la table n'existe pas encore, ignorer l'erreur et continuer
+      if (dbError?.code !== 'P2021') {
+        throw dbError
+      }
+    }
 
     if (existing) {
       return NextResponse.json(
@@ -136,25 +155,43 @@ export async function POST(
     }
 
     // Installer le module
-    const installed = await prisma.projectInstalledModule.create({
-      data: {
-        projectId: project.id,
-        moduleId,
-        enabled: true,
-      },
-      include: {
-        module: true,
-      },
-    })
+    try {
+      const installed = await prisma.projectInstalledModule.create({
+        data: {
+          projectId: project.id,
+          moduleId,
+          enabled: true,
+        },
+        include: {
+          module: true,
+        },
+      })
 
-    return NextResponse.json({
-      success: true,
-      module: installed,
-    })
+      return NextResponse.json({
+        success: true,
+        module: installed,
+      })
+    } catch (dbError: any) {
+      // Si la table n'existe pas (P2021)
+      if (dbError?.code === 'P2021') {
+        return NextResponse.json(
+          { error: 'La base de données n\'est pas disponible pour le moment. Migration en cours.' },
+          { status: 503 }
+        )
+      }
+      // Si le module est déjà installé (P2002 unique constraint)
+      if (dbError?.code === 'P2002') {
+        return NextResponse.json(
+          { error: 'Ce module est déjà installé dans ce projet' },
+          { status: 409 }
+        )
+      }
+      throw dbError
+    }
   } catch (error) {
     console.error('Error installing module:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Erreur lors de l\'installation du module. Veuillez réessayer.' },
       { status: 500 }
     )
   }

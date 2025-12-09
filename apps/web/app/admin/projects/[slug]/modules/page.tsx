@@ -61,6 +61,26 @@ export default function ProjectModulesPage() {
       if (!availableRes.ok) throw new Error('Erreur lors du chargement des modules disponibles')
       const availableData = await availableRes.json()
       setAvailableModules(availableData.modules || [])
+
+      // Si aucun module installé, proposer d'initialiser les modules de base
+      if ((projectData.modules || []).length === 0 && availableData.modules.length === 0) {
+        // Initialiser automatiquement les modules de base
+        try {
+          const initRes = await fetch(`/api/projects/${slug}/initialize-modules`, {
+            method: 'POST',
+          })
+          if (initRes.ok) {
+            // Recharger les modules
+            const projectRes2 = await fetch(`/api/projects/${slug}/modules`)
+            if (projectRes2.ok) {
+              const projectData2 = await projectRes2.json()
+              setProjectModules(projectData2.modules || [])
+            }
+          }
+        } catch (err) {
+          console.warn('Initialization skipped')
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
@@ -205,12 +225,25 @@ export default function ProjectModulesPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-red-700 dark:text-red-300 font-medium">Erreur</p>
-            <p className="text-red-600 dark:text-red-400 text-sm mt-1">{error}</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-700 dark:text-red-300 font-medium">Erreur</p>
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{error}</p>
+              {error.includes('Migration') && (
+                <p className="text-red-600 dark:text-red-400 text-xs mt-2 font-medium">
+                  💡 Les migrations de base de données sont en cours. Veuillez réessayer dans quelques instants.
+                </p>
+              )}
+            </div>
           </div>
+          <button
+            onClick={() => loadModules()}
+            className="flex-shrink-0 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-medium transition-colors"
+          >
+            Réessayer
+          </button>
         </div>
       )}
 
