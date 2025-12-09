@@ -170,6 +170,7 @@ model Project {
   
   // Définitions des modules IA
   moduleDefinitions ProjectModuleDefinition[]
+  installedModules  ProjectInstalledModule[]   @relation("InstalledModules")
   
   createdAt         DateTime                    @default(now())
   updatedAt         DateTime                    @updatedAt
@@ -204,9 +205,35 @@ model ProjectModuleDefinition {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  // Relations
+  installedIn     ProjectInstalledModule[]
+  
   // Contrainte d'unicité: un module par nom par projet
   @@unique([projectId, moduleName])
   @@index([projectId])
+}
+
+// Modules installés dans un projet
+model ProjectInstalledModule {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation("InstalledModules", fields: [projectId], references: [id], onDelete: Cascade)
+  
+  moduleId      String
+  module        ProjectModuleDefinition @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  
+  // Configuration du module
+  enabled       Boolean  @default(true)
+  customConfig  Json?    // Configuration personnalisée (options par module)
+  
+  createdAt     DateTime @default(now())
+  installedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Contrainte d'unicité: un module installé une seule fois par projet
+  @@unique([projectId, moduleId])
+  @@index([projectId])
+  @@index([moduleId])
 }
 
 enum ProjectType {

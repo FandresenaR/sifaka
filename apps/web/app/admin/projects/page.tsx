@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
-import { PlusCircle, FolderKanban, Calendar, User } from "lucide-react"
+import { PlusCircle, FolderKanban, Calendar, User, Zap } from "lucide-react"
 
 export default async function ProjectsPage() {
   const session = await auth()
@@ -23,6 +23,12 @@ export default async function ProjectsPage() {
           name: true,
           email: true,
           image: true,
+        },
+      },
+      installedModules: {
+        select: {
+          id: true,
+          enabled: true,
         },
       },
     },
@@ -115,12 +121,20 @@ export default async function ProjectsPage() {
                   {project.status}
                 </span>
 
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {new Date(project.createdAt).toLocaleDateString("fr-FR", {
-                    day: "numeric",
-                    month: "short",
-                  })}
+                <div className="flex items-center gap-3">
+                  {project.installedModules && project.installedModules.length > 0 && (
+                    <div className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                      <Zap className="w-3.5 h-3.5" />
+                      {project.installedModules.length}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {new Date(project.createdAt).toLocaleDateString("fr-FR", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </div>
                 </div>
               </div>
 

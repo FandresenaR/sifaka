@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect, notFound } from "next/navigation"
 import prisma from "@/lib/prisma"
 import ProjectSettingsForm from "@/components/admin/projects/ProjectSettingsForm"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Zap } from "lucide-react"
 import Link from "next/link"
 
 interface ProjectPageProps {
@@ -80,7 +80,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      {/* Navigation Tabs */}
+      <div className="flex gap-2 mt-6 border-b border-gray-200 dark:border-gray-700">
+        <Link
+          href={`/admin/projects/${slug}`}
+          className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400"
+        >
+          Paramètres
+        </Link>
+        <Link
+          href={`/admin/projects/${slug}/modules`}
+          className="flex items-center gap-2 px-4 py-3 font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+        >
+          <Zap className="w-4 h-4" />
+          Modules IA
+        </Link>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mt-6">
         <ProjectSettingsForm project={project} />
       </div>
 
