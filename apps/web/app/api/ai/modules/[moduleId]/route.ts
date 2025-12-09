@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { moduleId: string } }
+  { params }: { params: Promise<{ moduleId: string }> }
 ) {
   try {
     const session = await auth()
@@ -13,7 +13,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { moduleId } = params
+    const { moduleId } = await params
 
     // Vérifier que le module appartient à l'utilisateur
     const module = await prisma.projectModuleDefinition.findUnique({
