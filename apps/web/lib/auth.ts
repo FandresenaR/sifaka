@@ -31,7 +31,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async signIn({ user, account, profile }) {
             // Créer ou mettre à jour l'utilisateur en DB pour satisfaire les foreign keys
             if (account && profile) {
-                const userId = user?.id || profile.sub
+                const userId = user?.id || profile.sub || `oauth-${Date.now()}`
+                if (!userId || typeof userId !== 'string') {
+                    console.error("Invalid userId from OAuth profile", { userId, profile })
+                    return false
+                }
                 const email = profile.email!
                 const name = profile.name
                 const image = (profile as any).picture

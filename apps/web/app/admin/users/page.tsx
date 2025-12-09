@@ -115,10 +115,6 @@ export default function UsersPage() {
       setTimeout(() => setError(null), 3000)
     }
   }
-    } catch (err) {
-      setError("Erreur lors de la modification du rôle")
-    }
-  }
 
   const handleDeleteUser = async (userId: string) => {
     const user = users.find(u => u.id === userId)

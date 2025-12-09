@@ -131,6 +131,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         description: description?.trim() || null,
         type: type || existingProject.type,
         status: status || existingProject.status,
+        modules: body.modules || existingProject.modules, // Mettre à jour les modules
       },
       include: {
         owner: {

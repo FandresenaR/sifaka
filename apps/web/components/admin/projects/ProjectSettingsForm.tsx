@@ -12,6 +12,7 @@ interface ProjectSettingsFormProps {
     type: string
     description: string | null
     status: string
+    modules?: any | null // JSON type in Prisma - optionnel
   }
 }
 
@@ -26,7 +27,22 @@ export default function ProjectSettingsForm({ project }: ProjectSettingsFormProp
     description: project.description || "",
     type: project.type,
     status: project.status,
+    modules: (project.modules as any) || {
+      products: true,
+      blog: true,
+      media: true,
+    },
   })
+
+  const toggleModule = (module: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      modules: {
+        ...prev.modules,
+        [module]: !prev.modules[module],
+      },
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +64,7 @@ export default function ProjectSettingsForm({ project }: ProjectSettingsFormProp
       }
 
       setSuccess("Projet mis à jour avec succès !")
-      
+
       // Si le slug a changé (nom modifié), rediriger
       if (data.project.slug !== project.slug) {
         setTimeout(() => {
@@ -182,6 +198,68 @@ export default function ProjectSettingsForm({ project }: ProjectSettingsFormProp
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
           placeholder="Description optionnelle de votre projet..."
         />
+      </div>
+
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium mb-4">Modules du projet</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            type="button"
+            onClick={() => toggleModule("products")}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${formData.modules.products
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+              }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium">E-commerce</span>
+              {formData.modules.products && (
+                <CheckCircle className="w-5 h-5 text-blue-500" />
+              )}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Gestion de produits, catégories et commandes.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleModule("blog")}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${formData.modules.blog
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+              }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium">Blog</span>
+              {formData.modules.blog && (
+                <CheckCircle className="w-5 h-5 text-blue-500" />
+              )}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Articles, catégories et commentaires.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleModule("media")}
+            className={`p-4 rounded-lg border-2 text-left transition-all ${formData.modules.media
+                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+              }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium">Média</span>
+              {formData.modules.media && (
+                <CheckCircle className="w-5 h-5 text-blue-500" />
+              )}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Gestion de la bibliothèque multimédia.
+            </p>
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">

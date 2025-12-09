@@ -26,13 +26,13 @@ async function main() {
 
   // 2. Count orphaned content
   const orphanedProducts = await prisma.product.count({
-    where: { projectId: null },
+    where: { projectId: { equals: null } },
   })
   const orphanedPosts = await prisma.blogPost.count({
-    where: { projectId: null },
+    where: { projectId: { equals: null } },
   })
   const orphanedMedia = await prisma.media.count({
-    where: { projectId: null },
+    where: { projectId: { equals: null } },
   })
 
   console.log('📦 Orphaned content found:')
@@ -50,7 +50,7 @@ async function main() {
   if (orphanedProducts > 0) {
     console.log('🔄 Migrating products...')
     const updatedProducts = await prisma.product.updateMany({
-      where: { projectId: null },
+      where: { projectId: { equals: null } },
       data: { projectId: defaultProject.id },
     })
     console.log(`   ✅ Assigned ${updatedProducts.count} products to "${defaultProject.name}"`)
@@ -60,7 +60,7 @@ async function main() {
   if (orphanedPosts > 0) {
     console.log('🔄 Migrating blog posts...')
     const updatedPosts = await prisma.blogPost.updateMany({
-      where: { projectId: null },
+      where: { projectId: { equals: null } },
       data: { projectId: defaultProject.id },
     })
     console.log(`   ✅ Assigned ${updatedPosts.count} blog posts to "${defaultProject.name}"`)
@@ -78,10 +78,10 @@ async function main() {
   // 6. Verify migration
   console.log('\n🔍 Verifying migration...')
   const remainingOrphanedProducts = await prisma.product.count({
-    where: { projectId: null },
+    where: { projectId: { equals: null } },
   })
   const remainingOrphanedPosts = await prisma.blogPost.count({
-    where: { projectId: null },
+    where: { projectId: { equals: null } },
   })
 
   if (remainingOrphanedProducts === 0 && remainingOrphanedPosts === 0) {

@@ -155,23 +155,58 @@ model BlogPost {
 
 // Projects (CMS Projects)
 model Project {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique
-  type        ProjectType   @default(CUSTOM)
-  description String?
-  status      ProjectStatus @default(ACTIVE)
-  modules     Json?         // Configuration des modules activés { products: true, blog: true, media: true }
-  ownerId     String
-  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products    Product[]
-  blogPosts   BlogPost[]
-  media       Media[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id                String                      @id @default(cuid())
+  name              String
+  slug              String                      @unique
+  type              ProjectType                 @default(CUSTOM)
+  description       String?
+  status            ProjectStatus               @default(ACTIVE)
+  modules           Json?                       // Configuration des modules activés { products: true, blog: true, media: true }
+  ownerId           String
+  owner             User                        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products          Product[]
+  blogPosts         BlogPost[]
+  media             Media[]
+  
+  // Définitions des modules IA
+  moduleDefinitions ProjectModuleDefinition[]
+  
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
 
   @@index([ownerId])
   @@index([status])
+}
+
+// Définitions des modules générés par IA
+model ProjectModuleDefinition {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Identité du module
+  moduleName      String   // PascalCase: "Produit", "Commande", etc.
+  displayName     String?  // Nom affiché: "Gestion des Produits"
+  description     String?  // Description du module
+  
+  // Schéma généré
+  schema          Json     // Schéma Prisma au format JSON
+  routes          Json?    // Routes disponibles: { GET: true, POST: true, ... }
+  validations     Json?    // Règles de validation par champ
+  relationships   Json?    // Relations vers d'autres modules
+  indexes         String[] // Indexes Prisma générés
+  
+  // Métadonnées IA
+  generatedBy     String?  // "openrouter", "anthropic", "fallback"
+  aiModel         String?  // Modèle IA utilisé
+  aiPrompt        String?  // Prompt original (pour traçabilité)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Contrainte d'unicité: un module par nom par projet
+  @@unique([projectId, moduleName])
+  @@index([projectId])
 }
 
 enum ProjectType {
