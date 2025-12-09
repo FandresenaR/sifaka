@@ -51,6 +51,13 @@ model User {
   accounts      Account[]
   sessions      Session[]
   projects      Project[]
+  
+  // Shuffle Life Relations
+  preferences   UserPreference?
+  activities    UserActivity[]
+  favorites     FavoriteActivity[]
+  subscription  ShuffleLifeSubscription? @relation("ShuffleLifeSub")
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -249,3 +256,107 @@ enum ProjectStatus {
   ARCHIVED
   DRAFT
 }
+
+// ============================================
+// SHUFFLE LIFE - Activity Discovery Models
+// ============================================
+
+// User preferences for activity discovery
+model UserPreference {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Geolocation settings
+  latitude         Float?
+  longitude        Float?
+  lastLocationUpdate DateTime?
+  
+  // Discovery settings
+  defaultRadius    Int      @default(50) // km
+  preferredTypes   String[] // restaurant, park, museum, etc.
+  minRating        Float    @default(3.5)
+  
+  // Notifications
+  notifyNewActivities Boolean @default(true)
+  notificationRadius Int      @default(50)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+// Activity discovery history
+model UserActivity {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Search parameters
+  type        String   // "discovery", "search", "view"
+  latitude    Float
+  longitude   Float
+  radius      Int      // km
+  
+  // Results
+  resultCount Int      @default(0)
+  metadata    Json?    // Additional data
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Favorite activities saved by users
+model FavoriteActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Activity data
+  placeId   String   // From Google Maps or external source
+  name      String
+  latitude  Float
+  longitude Float
+  type      String   // restaurant, park, museum, etc.
+  rating    Float?
+  address   String?
+  
+  // Personal notes
+  notes     String?
+  visited   Boolean  @default(false)
+  rating_   Float?   // User's personal rating
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, placeId])
+  @@index([userId])
+  @@index([visited])
+}
+
+// Subscription tiers for Shuffle Life
+model ShuffleLifeSubscription {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation("ShuffleLifeSub", fields: [userId], references: [id], onDelete: Cascade)
+  
+  tier         String   @default("FREE") // FREE, PRO, PLUS
+  maxRadius    Int      @default(50) // km limit
+  
+  // Billing
+  status       String   @default("active") // active, canceled, past_due
+  stripeId     String?  @unique // Stripe customer ID
+  currentPeriodEnd DateTime?
+  
+  features     Json? // Custom features for tier
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([tier])
+}
+
