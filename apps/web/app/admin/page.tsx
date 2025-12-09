@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import * as api from "@/lib/api-client"
-import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban, Zap } from "lucide-react"
+import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban, Zap, Map } from "lucide-react"
 
 interface Stats {
   users: number
@@ -143,6 +143,14 @@ export default function AdminDashboard() {
       href: "/admin/modules",
       color: "from-amber-500 to-orange-500",
       stats: "Gérés via chat"
+    },
+    {
+      title: "MAP Module - Shuffle Life",
+      description: "Découvrez des activités aléatoires dans 200km",
+      icon: Map,
+      href: "/admin/map-module",
+      color: "from-cyan-500 to-blue-500",
+      stats: "Activé"
     },
     {
       title: "Gestion de Blog",

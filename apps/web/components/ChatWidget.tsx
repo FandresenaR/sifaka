@@ -1,14 +1,27 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, RefreshCw, Menu, Zap } from 'lucide-react'
+import { MessageCircle, X, Send, RefreshCw, Menu, Zap, MapPin } from 'lucide-react'
 import { MessageContent } from './MessageContent'
+import { ActivitiesDisplay } from './ActivitiesDisplay'
+import { useMapModule } from '@/lib/hooks/useMapModule'
 
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  activities?: Array<{
+    id: string
+    name: string
+    type: string
+    latitude: number
+    longitude: number
+    distance: number
+    description?: string
+    rating?: number
+    openingHours?: string
+  }>
 }
 
 interface AIModel {
@@ -32,7 +45,10 @@ export function ChatWidget() {
   const [apiKeyError, setApiKeyError] = useState<string | null>(null)
   const [moduleGenerationMode, setModuleGenerationMode] = useState(false)
   const [showModuleInfo, setShowModuleInfo] = useState(false)
+  const [mapModuleMode, setMapModuleMode] = useState(false)
+  const [copiedActivityId, setCopiedActivityId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { generateActivities, loading: mapLoading, error: mapError } = useMapModule()
 
   // Charger les modèles au démarrage
   useEffect(() => {
@@ -75,6 +91,44 @@ export function ChatWidget() {
   const handleRefreshModels = async () => {
     setModels([])
     await loadModels()
+  }
+
+  const handleGenerateActivities = async (latitude: number, longitude: number) => {
+    try {
+      const activities = await generateActivities(
+        latitude,
+        longitude,
+        200,
+        ['restaurants', 'parks', 'museums', 'sports', 'entertainment', 'events'],
+        selectedModel
+      )
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Found ${activities.length} activities around your location`,
+        timestamp: new Date(),
+        activities,
+      }
+
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error('Map module error:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        role: 'assistant',
+        content: `Error generating activities: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    }
+  }
+
+  const handleCopyActivity = (activity: any) => {
+    const json = JSON.stringify(activity, null, 2)
+    navigator.clipboard.writeText(json)
+    setCopiedActivityId(activity.id)
+    setTimeout(() => setCopiedActivityId(null), 2000)
   }
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -170,6 +224,16 @@ export function ChatWidget() {
                   <Zap size={18} />
                 </button>
                 <button
+                  onClick={() => setMapModuleMode(!mapModuleMode)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    mapModuleMode ? 'bg-cyan-500/50' : 'hover:bg-blue-500/50'
+                  }`}
+                  aria-label="Mode MAP Module"
+                  title="Générer des activités avec MAP Module"
+                >
+                  <MapPin size={18} />
+                </button>
+                <button
                   onClick={handleRefreshModels}
                   disabled={isLoadingModels}
                   className="p-2 hover:bg-blue-500/50 rounded-lg transition-colors disabled:opacity-50"
@@ -191,6 +255,20 @@ export function ChatWidget() {
                 <p className="text-xs text-blue-50/80">
                   ✓ Vous pouvez : créer schémas, relations, validations, routes API<br />
                   ✗ L'IA ne peut pas : UI, logique métier, intégrations externes
+                </p>
+              </div>
+            )}
+
+            {/* Mode MAP Module Info */}
+            {mapModuleMode && (
+              <div className="mt-3 p-3 bg-cyan-500/20 rounded-lg text-sm border border-cyan-300/30">
+                <p className="font-semibold mb-2">🗺️ Mode MAP Module - Shuffle Life</p>
+                <p className="text-xs text-cyan-50 mb-2">
+                  Découvrez des activités aléatoires dans un rayon de 200km autour de vous.
+                </p>
+                <p className="text-xs text-cyan-50/80">
+                  ✓ Génère : liste d'activités, localisation, distance<br />
+                  ✗ Ne génère pas : UI interactive, cartes dynamiques
                 </p>
               </div>
             )}
@@ -290,7 +368,18 @@ export function ChatWidget() {
                       {message.content}
                     </p>
                   ) : (
-                    <MessageContent content={message.content} />
+                    <div className="space-y-3">
+                      <MessageContent content={message.content} />
+                      {message.activities && message.activities.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-300 dark:border-gray-600">
+                          <ActivitiesDisplay
+                            activities={message.activities}
+                            onCopyActivity={handleCopyActivity}
+                            copiedActivityId={copiedActivityId}
+                          />
+                        </div>
+                      )}
+                    </div>
                   )}
                   <span className="text-xs opacity-70 mt-1 block">
                     {message.timestamp.toLocaleTimeString('fr-FR', {
