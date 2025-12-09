@@ -215,12 +215,21 @@ export default function ProjectModulesPage() {
           </div>
         </div>
 
-        <Link
-          href={`/admin/projects/${slug}`}
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
-        >
-          ← Retour
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/projects/${slug}/dashboard`}
+            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            Voir le tableau de bord
+          </Link>
+          <Link
+            href={`/admin/projects/${slug}`}
+            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+          >
+            ← Retour
+          </Link>
+        </div>
       </div>
 
       {/* Error */}
