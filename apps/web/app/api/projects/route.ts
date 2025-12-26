@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Non autorisé" },
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     const isSuperAdmin = session.user.role === "SUPER_ADMIN"
-    
+
     // Super admin voit tous les projets, les autres voient seulement les leurs
     const projects = await prisma.project.findMany({
       where: isSuperAdmin ? {} : { ownerId: session.user.id },
@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    
+    console.log("DEBUG: POST /api/projects - User ID:", session?.user?.id)
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Non autorisé" },
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       .replace(/[\u0300-\u036f]/g, "") // Supprimer les accents
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "")
-    
+
     // Vérifier l'unicité du slug
     let slug = baseSlug
     let counter = 1

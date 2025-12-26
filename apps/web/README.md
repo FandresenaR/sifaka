@@ -5,6 +5,7 @@ A modern, AI-powered Content Management System built with Next.js, TypeScript, a
 ## Features
 
 - 🚀 **Next.js 16** with App Router
+- 🎯 **Multi-Tenant Projects** - Isolated data per project
 - 🎨 **Tailwind CSS** for styling  
 - 🗄️ **Neon PostgreSQL** serverless database
 - 🔐 **NextAuth.js** for authentication
@@ -13,6 +14,72 @@ A modern, AI-powered Content Management System built with Next.js, TypeScript, a
 - ✅ **TypeScript** for type safety
 - 📝 **Zod** for schema validation
 - 🔧 **Prisma ORM** for database management
+
+## Architecture
+
+### Multi-Tenant Project System
+
+Sifaka CMS uses a **project-based multi-tenant architecture** where each project has:
+
+- **Isolated Data**: Products, Blog Posts, and Media are scoped to projects
+- **Module Configuration**: Enable/disable features per project (Products, Blog, Media)
+- **Ownership Model**: Projects belong to users with role-based access
+- **Shared Resources**: Media can optionally be shared across projects
+
+#### Data Model
+
+```prisma
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  type      ProjectType  // ECOMMERCE, BLOG, PORTFOLIO, LANDING, CUSTOM
+  status    ProjectStatus // ACTIVE, ARCHIVED, DRAFT
+  modules   Json?    // { products: true, blog: true, media: true }
+  ownerId   String
+  
+  // Relations
+  owner     User      @relation(...)
+  products  Product[]
+  blogPosts BlogPost[]
+  media     Media[]
+}
+
+model Product {
+  projectId String  // Required - belongs to one project
+  project   Project @relation(...)
+  // ...
+}
+
+model BlogPost {
+  projectId String  // Required - belongs to one project
+  project   Project @relation(...)
+  // ...
+}
+
+model Media {
+  projectId String?  // Optional - can be shared across projects
+  project   Project? @relation(...)
+  // ...
+}
+```
+
+#### API Filtering
+
+All content APIs automatically filter by `projectId`:
+
+```typescript
+// GET /api/products?projectId=xxx
+// GET /api/blog?projectId=xxx
+// GET /api/media?projectId=xxx
+```
+
+### Project Management
+
+- **Create Projects**: `/admin` dashboard
+- **List Projects**: `/admin/projects`
+- **Configure Project**: `/admin/projects/[slug]`
+- **Delete Project**: Cascade deletes all associated content
 
 ## Tech Stack
 

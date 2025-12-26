@@ -64,18 +64,24 @@ Si seul le port 443 (WebSocket) est accessible (cas Azure Neon), Prisma CLI ne f
 DATABASE_URL=postgresql://user:pass@host-pooler.neon.tech/db?sslmode=require
 ```
 
-**Prisma Client pour production :**
-```typescript
-// lib/prisma-neon.ts - Avec adapter WebSocket
+// lib/prisma.ts - Configuration unifiée (Dev & Prod)
+import { PrismaClient } from '@prisma/client'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { Pool, neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
 
+// Configuration WebSocket pour Neon
 neonConfig.webSocketConstructor = ws
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const connectionString = `${process.env.DATABASE_URL}`
+const pool = new Pool({ connectionString })
 const adapter = new PrismaNeon(pool)
+
 const prisma = new PrismaClient({ adapter })
+
+export default prisma
 ```
+
+**Note :** Cette configuration fonctionne désormais pour **tous les environnements** (Dev avec port bloqué, Prod, Vercel Edge). Plus besoin de fichiers séparés.
 
 **Scripts alternatifs requis :**
 ```bash

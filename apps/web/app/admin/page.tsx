@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import * as api from "@/lib/api-client"
-import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket } from "lucide-react"
+import { Package, FileText, Users, FolderOpen, Activity, Shield, Edit, DollarSign, LogOut, Plus, Rocket, FolderKanban, Zap, Map } from "lucide-react"
 
 interface Stats {
   users: number
@@ -60,25 +60,25 @@ export default function AdminDashboard() {
       setStatsLoading(true)
       setError(null)
 
-      // Essayer de charger depuis l'API
-      try {
-        const response = await api.get("/api/users")
-        const users = Array.isArray(response) ? response : response.data || []
+      // Charger les utilisateurs depuis l'API
+      const response = await fetch("/api/users")
+      
+      if (response.ok) {
+        const data = await response.json()
+        const users = data.users || []
 
         const userCount = users.filter((u: any) => u.role === "USER").length
         const adminCount = users.filter((u: any) => u.role === "ADMIN").length
         const superAdminCount = users.filter((u: any) => u.role === "SUPER_ADMIN").length
 
         setStats({ users: userCount, admins: adminCount, superAdmins: superAdminCount })
-      } catch (apiErr) {
-        console.warn("API non disponible, utilisation des données de session:", apiErr)
-        
-        // Fallback: au minimum compter l'utilisateur actuel
+      } else {
+        // Fallback: compter seulement l'utilisateur actuel
         const currentUserRole = session?.user?.role
         setStats({
           users: currentUserRole === "USER" ? 1 : 0,
           admins: currentUserRole === "ADMIN" ? 1 : 0,
-          superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0
+          superAdmins: currentUserRole === "SUPER_ADMIN" ? 1 : 0,
         })
       }
     } catch (err) {
@@ -121,12 +121,36 @@ export default function AdminDashboard() {
 
   const modules = [
     {
+      title: "Mes Projets",
+      description: "Gérez vos projets CMS et configurations",
+      icon: FolderKanban,
+      href: "/admin/projects",
+      color: "from-violet-500 to-purple-500",
+      stats: `${projects.length} projet${projects.length > 1 ? 's' : ''}`
+    },
+    {
       title: "Gestion de Produits",
       description: "Catalogue, prix, inventaire et catégories",
       icon: Package,
       href: "/admin/products",
       color: "from-blue-500 to-cyan-500",
       stats: "0 produits"
+    },
+    {
+      title: "Modules IA",
+      description: "Modules générés dynamiquement par l'IA",
+      icon: Zap,
+      href: "/admin/modules",
+      color: "from-amber-500 to-orange-500",
+      stats: "Gérés via chat"
+    },
+    {
+      title: "MAP Module - Shuffle Life",
+      description: "Découvrez des activités aléatoires dans 200km",
+      icon: Map,
+      href: "/admin/map-module",
+      color: "from-cyan-500 to-blue-500",
+      stats: "Activé"
     },
     {
       title: "Gestion de Blog",

@@ -1,6 +1,29 @@
-# Sifaka - Next.js Web Application
+# Sifaka CMS - TurboRepo Monorepo
 
-A modern Next.js web application with Neon PostgreSQL database, NextAuth authentication, and AI chat features.
+A modern, multi-tenant Content Management System with NestJS API and Next.js frontend.
+
+## 📦 Version 0.2.0
+
+**Latest Release**: Multi-Tenant Project Architecture  
+**Release Date**: December 8, 2024
+
+See [CHANGELOG.md](./CHANGELOG.md) for full release notes.
+
+## 🏗️ Architecture
+
+This is a **TurboRepo monorepo** containing:
+
+- **`apps/api`**: NestJS backend (CRM/Project Management) - Port 3001
+- **`apps/web`**: Next.js 16 frontend (Zoahary Baobab CMS) - Port 3000
+- **`packages/types`**: Shared TypeScript types
+
+### Multi-Tenant System
+
+Each **Project** has isolated:
+- ✅ Products (e-commerce catalog)
+- ✅ Blog Posts (content management)
+- ✅ Media Library (with optional sharing)
+- ✅ Module Configuration (enable/disable features)
 
 ## 🚀 Quick Start
 
@@ -25,56 +48,101 @@ A modern Next.js web application with Neon PostgreSQL database, NextAuth authent
 
 3. **Configure environment variables**
    
-   Copy `.env.example` to `.env` and fill in your values:
-   ```bash
-   cp .env.example .env
+   Create `.env` files in both apps:
+   
+   **apps/web/.env**:
+   ```env
+   DATABASE_URL=postgresql://user:pass@host.neon.tech/cms_db
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=your-secret-here
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-secret
+   ```
+   
+   **apps/api/.env**:
+   ```env
+   DATABASE_URL=postgresql://user:pass@host.neon.tech/crm_db
+   NEON_HOST=host.neon.tech
+   NEON_DATABASE=crm_db
+   NEON_USER=user
+   NEON_PASSWORD=password
    ```
 
-   Required variables:
-   - `DATABASE_URL`: Your Neon PostgreSQL connection string
-   - `NEXTAUTH_URL`: Your application URL (http://localhost:3000 for development)
-   - `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
-   - `GOOGLE_CLIENT_ID`: Google OAuth client ID
-   - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
-
-4. **Set up the database**
+4. **Set up databases**
+   
+   **Web (CMS)**:
    ```bash
-   # Generate Prisma client
+   cd apps/web
    npx prisma generate
-
-   # Run migrations
-   npx prisma migrate dev
+   npx prisma migrate deploy
    ```
-
-5. **Start the development server**
+   
+   **API (CRM)**:
    ```bash
-   npm run dev
+   cd apps/api
+   npx prisma generate
+   npx tsx scripts/deploy-schema.ts
    ```
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Start development**
+   ```bash
+   # From root - starts both apps
+   npm run dev
+   
+   # Or individually
+   cd apps/web && npm run dev   # Port 3000
+   cd apps/api && npm run start:dev  # Port 3001
+   ```
+
+## 🔄 Migration from v0.1.x
+
+If upgrading from version 0.1.x, see [MIGRATION_GUIDE_v0.2.0.md](./MIGRATION_GUIDE_v0.2.0.md) for detailed steps.
+
+**Quick migration**:
+```bash
+cd apps/web
+npx tsx scripts/migrate-to-projects.ts
+```
 
 ## 📁 Project Structure
 
 ```
 sifaka/
-├── app/                  # Next.js App Router pages
-├── components/           # React components
-├── lib/                  # Utility functions and configurations
-├── prisma/              # Database schema and migrations
-├── public/              # Static assets
-├── types/               # TypeScript type definitions
-├── .env                 # Environment variables (not in git)
-├── .env.example         # Environment variables template
-├── next.config.ts       # Next.js configuration
-├── tailwind.config.ts   # Tailwind CSS configuration
-└── tsconfig.json        # TypeScript configuration
+├── apps/
+│   ├── api/                 # NestJS backend (CRM)
+│   │   ├── src/
+│   │   ├── prisma/          # API database schema
+│   │   └── scripts/         # Database deployment scripts
+│   └── web/                 # Next.js frontend (CMS)
+│       ├── app/             # App Router pages
+│       ├── components/      # React components
+│       ├── lib/             # Utilities & configs
+│       ├── prisma/          # Web database schema
+│       └── scripts/         # Migration scripts
+├── packages/
+│   └── types/              # Shared TypeScript types
+├── CHANGELOG.md            # Version history
+├── MIGRATION_GUIDE_v0.2.0.md  # Upgrade instructions
+└── turbo.json             # TurboRepo configuration
 ```
 
 ## 🛠️ Available Scripts
 
-- `npm run dev` - Start development server
+### Root (TurboRepo)
+- `npm run dev` - Start all apps in development mode
+- `npm run build` - Build all apps for production
+- `npm run start` - Start all apps in production mode
+
+### apps/web (CMS)
+- `npm run dev` - Start Next.js dev server (port 3000)
 - `npm run build` - Build for production
-- `npm start` - Start production server
+- `npm run prisma:generate` - Generate Prisma client
+- `npx tsx scripts/migrate-to-projects.ts` - Migrate to v0.2.0
+
+### apps/api (CRM)
+- `npm run start:dev` - Start NestJS with watch mode (port 3001)
+- `npm run build` - Build for production  
+- `npx tsx scripts/deploy-schema.ts` - Deploy schema to Neon
 - `npm run lint` - Run ESLint
 
 ## 🗄️ Database

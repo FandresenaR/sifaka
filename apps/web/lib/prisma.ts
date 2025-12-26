@@ -1,17 +1,34 @@
 import { PrismaClient } from '../node_modules/.prisma/client-web'
+import { PrismaNeon } from '@prisma/adapter-neon'
+import { neonConfig } from '@neondatabase/serverless'
+import ws from 'ws'
 
 /**
- * Prisma Client - Development Configuration
+ * Prisma Client - Development & Production Configuration
  * 
- * This is the standard Prisma client for development.
- * For production/Edge runtime with Neon, use lib/prisma-neon.ts instead.
- * 
- * Note: Neon requires WebSocket connections (port 443), which Prisma CLI 
- * doesn't support. Use npm run db:* scripts for database operations.
+ * Configured to use Neon serverless driver with WebSockets to bypass
+ * potential firewall restrictions on port 5432.
  */
+
+// Configure Neon to use WebSockets
+neonConfig.webSocketConstructor = ws
+neonConfig.fetchConnectionCache = true
+neonConfig.useSecureWebSocket = true
+neonConfig.pipelineConnect = "password"
+
+const connectionString = process.env.DATABASE_URL
+
+if (!connectionString) {
+  // Warn but don't crash immediately in dev if env not loaded yet, 
+  // though typically it fails later.
+  console.warn('DATABASE_URL is not defined')
+}
+
+const adapter = new PrismaNeon({ connectionString: connectionString || '' })
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error']
   })
 }

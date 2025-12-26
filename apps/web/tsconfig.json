@@ -34,6 +34,7 @@
     "node_modules",
     "apps/api",
     "sifaka-api-backup",
-    "zoahary-cms"
+    "zoahary-cms",
+    "scripts"
   ]
 }

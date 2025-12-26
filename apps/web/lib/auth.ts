@@ -12,7 +12,7 @@ const SUPER_ADMIN_EMAIL = "fandresenar6@gmail.com"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     // Temporairement désactivé pour éviter les problèmes de réseau
-    // adapter: PrismaAdapter(prisma) as Adapter,
+    adapter: PrismaAdapter(prisma) as Adapter,
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
@@ -28,13 +28,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }),
     ],
     callbacks: {
-        async signIn({ user }) {
+        async signIn({ user, account, profile }) {
+            // Créer ou mettre à jour l'utilisateur en DB pour satisfaire les foreign keys
+            if (account && profile) {
+                const userId = user?.id || profile.sub || `oauth-${Date.now()}`
+                if (!userId || typeof userId !== 'string') {
+                    console.error("Invalid userId from OAuth profile", { userId, profile })
+                    return false
+                }
+                const email = profile.email!
+                const name = profile.name
+                const image = (profile as any).picture
+
+                try {
+                    // Upsert l'utilisateur pour s'assurer qu'il existe en DB
+                    await prisma.user.upsert({
+                        where: { id: userId },
+                        update: {
+                            email,
+                            name,
+                            image,
+                            emailVerified: new Date(),
+                            // Mettre à jour le rôle seulement si c'est le super admin
+                            ...(email === SUPER_ADMIN_EMAIL && { role: "SUPER_ADMIN" }),
+                        },
+                        create: {
+                            id: userId,
+                            email,
+                            name,
+                            image,
+                            emailVerified: new Date(),
+                            role: email === SUPER_ADMIN_EMAIL ? "SUPER_ADMIN" : "USER",
+                        },
+                    })
+                } catch (error) {
+                    console.error("Error creating/updating user in signIn callback:", error)
+                    return false
+                }
+            }
             return true
         },
-        async jwt({ token, account, profile }) {
+        async jwt({ token, user, account, profile }) {
             // Premier login - définir toutes les données
             if (account && profile) {
-                token.id = profile.sub
+                token.id = user?.id || profile.sub
                 token.email = profile.email
                 token.name = profile.name
                 token.picture = (profile as any).picture
