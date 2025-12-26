@@ -76,6 +76,8 @@ enum UserRole {
   USER
   ADMIN
   SUPER_ADMIN
+  MANAGER
+  CLIENT
 }
 
 // AI Configuration
@@ -169,8 +171,12 @@ model Project {
   type              ProjectType                 @default(CUSTOM)
   description       String?
   status            ProjectStatus               @default(ACTIVE)
+  color             String?                     // Hex color for UI
   modules           Json?                       // Configuration des modules activés { products: true, blog: true, media: true }
   ownerId           String
+  startDate         DateTime?
+  endDate           DateTime?
+  budget            Float?
   owner             User                        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products          Product[]
   blogPosts         BlogPost[]

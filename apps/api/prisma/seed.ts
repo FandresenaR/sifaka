@@ -81,7 +81,9 @@ async function main() {
     // Create "Shuffle Life" project
     const shuffleLife = await prisma.project.upsert({
         where: { slug: 'shuffle-life' },
-        update: {},
+        update: {
+            ownerId: admin.id,
+        },
         create: {
             name: 'Shuffle Life',
             slug: 'shuffle-life',
@@ -90,6 +92,7 @@ async function main() {
             color: '#6366f1',
             startDate: new Date('2025-01-01'),
             budget: 50000,
+            ownerId: admin.id,
         },
     });
 

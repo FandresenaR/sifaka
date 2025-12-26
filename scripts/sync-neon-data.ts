@@ -98,6 +98,7 @@ async function sync() {
                 if (err.code === 'P2021' || err.code === 'P2022') {
                     console.warn(`⚠️  Skipping table ${table}: Column mismatch or table missing in database.`);
                     console.warn(`   (Hint: Run 'npx prisma db push' on both branches to fix this)`);
+                    console.error(`   Error details: ${err.message.split('\n')[0]}`);
                 } else {
                     console.error(`❌ Error reading table ${table}:`, err.message);
                 }
