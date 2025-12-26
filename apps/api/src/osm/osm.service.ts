@@ -191,7 +191,8 @@ export class OsmService {
                     count++;
                 }
             } catch (error) {
-                this.logger.error(`Failed to save activity ${act.id}`, error);
+                this.logger.error(`Failed to save activity ${act.id} for user ${userId}. Error: ${error.message}`, error.stack);
+                console.error('Full Save Error:', JSON.stringify(error, null, 2));
             }
         }
         return count;
@@ -286,7 +287,9 @@ export class OsmService {
                 });
             } catch (err) {
                 // ignore individual insert errors to prevent blocking the flow
+                console.error(`Cache insert failed for ${act.id}:`, err.message);
             }
         }
     }
 }
+
