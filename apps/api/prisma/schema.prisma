@@ -28,6 +28,7 @@ model User {
   lastLoginAt   DateTime?
   
   // Relations
+  ownedProjects Project[]       @relation("ProjectOwner")
   projects      ProjectMember[]
   tasksCreated  Task[]          @relation("TaskCreator")
   tasksAssigned Task[]          @relation("TaskAssignee")
@@ -44,6 +45,7 @@ model User {
 enum UserRole {
   USER
   ADMIN
+  SUPER_ADMIN
   MANAGER
   CLIENT
 }
@@ -56,9 +58,12 @@ model Project {
   id          String        @id @default(cuid())
   name        String
   slug        String        @unique
+  type        ProjectType   @default(CUSTOM)
   description String?
   status      ProjectStatus @default(ACTIVE)
   color       String?       // Hex color for UI
+  modules     Json?         // Configuration des modules activés
+  ownerId     String        // Requis pour compatibilité Web Central
   startDate   DateTime?
   endDate     DateTime?
   budget      Float?
@@ -66,6 +71,7 @@ model Project {
   updatedAt   DateTime      @updatedAt
   
   // Relations
+  owner       User          @relation("ProjectOwner", fields: [ownerId], references: [id])
   members     ProjectMember[]
   tasks       Task[]
   clients     Client[]
@@ -73,6 +79,7 @@ model Project {
 
   @@index([slug])
   @@index([status])
+  @@index([ownerId])
 }
 
 enum ProjectStatus {
@@ -80,6 +87,15 @@ enum ProjectStatus {
   ON_HOLD
   COMPLETED
   ARCHIVED
+  DRAFT
+}
+
+enum ProjectType {
+  ECOMMERCE
+  BLOG
+  PORTFOLIO
+  LANDING
+  CUSTOM
 }
 
 model ProjectMember {
