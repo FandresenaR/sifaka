@@ -15,6 +15,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "latest",
+    "typescript": "^5.7.3"
   }
 }

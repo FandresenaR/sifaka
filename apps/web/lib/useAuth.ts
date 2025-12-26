@@ -1,11 +1,11 @@
 import { useSession, signOut as nextAuthSignOut } from "next-auth/react"
-import type { UserRole } from "@prisma/client"
+import type { UserRole } from "../node_modules/.prisma/client-web"
 import { useEffect, useState } from "react"
 
 export function useAuth() {
     const { data: session, status, update } = useSession()
     const [hasChecked, setHasChecked] = useState(false)
-    
+
     // Attendre que la session soit vraiment vérifiée
     useEffect(() => {
         if (status !== "loading") {
@@ -16,10 +16,10 @@ export function useAuth() {
             return () => clearTimeout(timer)
         }
     }, [status])
-    
+
     const isLoading = status === "loading" || !hasChecked
     const isLoggedIn = status === "authenticated" && !!session?.user
-    
+
     const user = session?.user ? {
         id: session.user.id,
         email: session.user.email || "",

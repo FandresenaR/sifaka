@@ -1,3 +1,6 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
@@ -17,7 +20,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Permet les requêtes sans origin (comme les appels serveur-à-serveur)
       if (!origin) return callback(null, true);
-      
+
       // Vérifie si l'origine est dans la liste ou correspond au pattern Vercel
       if (
         allowedOrigins.includes(origin) ||
@@ -26,7 +29,7 @@ async function bootstrap() {
       ) {
         return callback(null, true);
       }
-      
+
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,

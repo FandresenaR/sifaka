@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, ProjectStatus, TaskStatus, Priority, MemberRole } from '@prisma/client';
+import { PrismaClient, UserRole, ProjectStatus, TaskStatus, Priority, MemberRole } from '../src/generated/prisma';
 
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { neonConfig, PoolConfig } from "@neondatabase/serverless";

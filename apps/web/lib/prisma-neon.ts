@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../node_modules/.prisma/client-web'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { neonConfig } from '@neondatabase/serverless'
 import ws from 'ws'
@@ -33,7 +33,7 @@ if (!connectionString) {
 const adapter = new PrismaNeon({ connectionString })
 
 const prismaClientSingleton = () => {
-  return new PrismaClient({ 
+  return new PrismaClient({
     adapter,
     log: ['error']
   })

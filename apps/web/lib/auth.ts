@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import prisma from "@/lib/prisma"
-import type { UserRole } from "@prisma/client"
+import type { UserRole } from "../node_modules/.prisma/client-web"
 import type { Adapter } from "next-auth/adapters"
 
 // Email du super admin

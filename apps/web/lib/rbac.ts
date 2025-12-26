@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth"
-import type { UserRole } from "@prisma/client"
+import type { UserRole } from "../node_modules/.prisma/client-web"
 
 /**
  * Permissions system based on roles
@@ -9,23 +9,23 @@ export enum Permission {
   VIEW_USERS = "view_users",
   MANAGE_USERS = "manage_users",
   DELETE_USERS = "delete_users",
-  
+
   // Content management
   VIEW_CONTENT = "view_content",
   CREATE_CONTENT = "create_content",
   EDIT_CONTENT = "edit_content",
   DELETE_CONTENT = "delete_content",
   PUBLISH_CONTENT = "publish_content",
-  
+
   // Media management
   VIEW_MEDIA = "view_media",
   UPLOAD_MEDIA = "upload_media",
   DELETE_MEDIA = "delete_media",
-  
+
   // Settings
   VIEW_SETTINGS = "view_settings",
   MANAGE_SETTINGS = "manage_settings",
-  
+
   // AI
   USE_AI = "use_ai",
   MANAGE_AI_CONFIG = "manage_ai_config",

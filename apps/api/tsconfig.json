@@ -20,6 +20,14 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@prisma/api-client": [
+        "./node_modules/.prisma/client-api"
+      ],
+      "@prisma/api-client/*": [
+        "./node_modules/.prisma/client-api/*"
+      ]
+    }
   }
 }
