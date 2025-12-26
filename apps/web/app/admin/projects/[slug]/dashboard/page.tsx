@@ -49,6 +49,9 @@ interface Activity {
   rating?: number
   distance: number
   type?: string
+  website?: string
+  phone?: string
+  opening_hours?: string
 }
 
 interface Location {
@@ -73,7 +76,7 @@ export default function ProjectDashboard() {
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [radius, setRadius] = useState(1000) // Default 1km for OSM
+  const [radius, setRadius] = useState(3000) // Default 3km for OSM
   const [activityTypes, setActivityTypes] = useState<string[]>(['restaurant', 'park', 'cafe'])
 
   // Charger les données du projet
@@ -184,12 +187,26 @@ export default function ProjectDashboard() {
           setError(null)
         },
         (err) => {
-          console.error('Geolocation error:', err);
-          setError(`Erreur géolocalisation (${err.code}): ${err.message || 'Unknown error'}`)
+          console.warn('Geolocation access failed or denied, using fallback:', err.message);
+          // Fallback to Antananarivo on error
+          const fallbackLoc = {
+            latitude: -18.8792,
+            longitude: 47.5079,
+            accuracy: 0,
+          }
+          setLocation(fallbackLoc)
+          setError(`Note: Géolocalisation non disponible (${err.message || 'accès refusé'}). Utilisation d'une position par défaut.`)
         }
       )
     } catch (err) {
-      setError('Erreur lors de la géolocalisation')
+      // Fallback on catch
+      const fallbackLoc = {
+        latitude: -18.8792,
+        longitude: 47.5079,
+        accuracy: 0,
+      }
+      setLocation(fallbackLoc)
+      setError('Erreur inattendue. Utilisation de la position par défaut (Antananarivo).')
     }
   }
 
@@ -208,9 +225,11 @@ export default function ProjectDashboard() {
       setSearching(true)
       setError(null)
 
-      // Use logic similar to useActivities hook, but adjusted for the dashboard structure
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      // Ensure API URL is correctly formatted
+      const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      const API_URL = rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`;
 
+      console.log('Fetching activities from:', `${API_URL}/activities/nearby?lat=${searchLat}&lon=${searchLon}&radius=${radius}`);
       const res = await fetch(`${API_URL}/activities/nearby?lat=${searchLat}&lon=${searchLon}&radius=${radius}`)
 
       if (!res.ok) {
@@ -219,22 +238,29 @@ export default function ProjectDashboard() {
       }
 
       const rawActivities = await res.json()
+      console.log('Activities received:', rawActivities.length);
 
       // Transform backend OSM activities to Dashboard Activity interface
       const mappedActivities: Activity[] = rawActivities.map((act: any) => ({
         placeId: act.id,
         name: act.name,
-        address: `${act.category} - ${act.type}`, // Construct a simple address/type string
+        address: [act.address?.housenumber, act.address?.street, act.address?.city].filter(Boolean).join(' ') || `${act.category} - ${act.type}`,
         latitude: act.location.lat,
         longitude: act.location.lon,
         distance: 0, // Need to calculate or omit
         type: act.type,
-        rating: 0
+        rating: 0,
+        website: act.website,
+        phone: act.phone,
+        opening_hours: act.opening_hours
       }));
 
       setActivities(mappedActivities)
-
+      if (mappedActivities.length === 0) {
+        setError('Aucune activité trouvée dans ce rayon. Essayez d\'augmenter le rayon.');
+      }
     } catch (err) {
+      console.error('Search error:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setSearching(false)
@@ -561,12 +587,14 @@ function MapActivityView({
           </h3>
 
           {location ? (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
-              <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-2">✓ Localisation obtenue</p>
-              <p className="text-xs text-green-600 dark:text-green-400">
+            <div className={`p-4 rounded border ${location.accuracy === 0 ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800' : 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'}`}>
+              <p className={`text-xs font-medium mb-2 ${location.accuracy === 0 ? 'text-amber-700 dark:text-amber-400' : 'text-green-700 dark:text-green-400'}`}>
+                {location.accuracy === 0 ? '⚠ Localisation par défaut' : '✓ Localisation obtenue'}
+              </p>
+              <p className={`text-xs ${location.accuracy === 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
                 Lat: {location.latitude.toFixed(4)}° • Lng: {location.longitude.toFixed(4)}°
               </p>
-              {location.accuracy && (
+              {location.accuracy > 0 && (
                 <p className="text-xs text-green-600 dark:text-green-400 mt-2">
                   Précision: ±{Math.round(location.accuracy)}m
                 </p>
@@ -673,9 +701,33 @@ function MapActivityView({
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900 dark:text-white">{activity.name}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{activity.address}</p>
-                    <div className="flex gap-4 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                      {activity.rating > 0 && <span>⭐ {activity.rating?.toFixed(1)}/5</span>}
-                      <span>📍 {activity.type}</span>
+                    <div className="flex gap-4 mt-2 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
+                      {activity.rating !== undefined && activity.rating > 0 && <span>⭐ {activity.rating.toFixed(1)}/5</span>}
+                      <span className="capitalize">📍 {activity.type?.replace(/_/g, ' ')}</span>
+                      {activity.opening_hours && <span title={activity.opening_hours}>🕒 Ouvert</span>}
+                    </div>
+
+                    <div className="flex gap-3 mt-3">
+                      {activity.website && (
+                        <a
+                          href={activity.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                          🌐 Site web
+                        </a>
+                      )}
+
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${activity.latitude},${activity.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors"
+                      >
+                        <MapIcon className="w-3 h-3" />
+                        S'y rendre
+                      </a>
                     </div>
                   </div>
                   <button

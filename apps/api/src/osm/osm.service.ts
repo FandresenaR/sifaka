@@ -20,6 +20,14 @@ export interface Activity {
         lon: number;
     };
     tags: { [key: string]: string };
+    website?: string;
+    phone?: string;
+    opening_hours?: string;
+    address?: {
+        street?: string;
+        housenumber?: string;
+        city?: string;
+    };
 }
 
 @Injectable()
@@ -92,6 +100,14 @@ export class OsmService {
                     type,
                     location: { lat, lon },
                     tags: el.tags || {},
+                    website: el.tags?.website || el.tags?.['contact:website'] || el.tags?.url,
+                    phone: el.tags?.phone || el.tags?.['contact:phone'],
+                    opening_hours: el.tags?.opening_hours,
+                    address: {
+                        street: el.tags?.['addr:street'],
+                        housenumber: el.tags?.['addr:housenumber'],
+                        city: el.tags?.['addr:city'],
+                    }
                 };
             });
     }
