@@ -3,7 +3,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { OsmService, Activity } from './osm.service';
 import { PrismaService } from '../prisma/prisma.service';
-import type { User } from '@prisma/client';
+import type { User } from '../generated/prisma';
 
 @Controller('activities')
 export class OsmController {
