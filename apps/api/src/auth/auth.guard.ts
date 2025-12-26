@@ -13,7 +13,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
     private reflector: Reflector,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Vérifie si la route est publique
@@ -39,7 +39,10 @@ export class AuthGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException("Invalid token");
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException(error.message || "Invalid token");
     }
   }
 

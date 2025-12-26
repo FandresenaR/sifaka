@@ -83,10 +83,15 @@ export class AuthService {
    * Vérifie un token Google ID
    */
   private async verifyGoogleToken(idToken: string): Promise<GoogleUserInfo> {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
     try {
+      if (!clientId) {
+        console.error('GOOGLE_CLIENT_ID is not defined in backend .env');
+      }
+
       const ticket = await this.googleClient.verifyIdToken({
         idToken,
-        audience: process.env.GOOGLE_CLIENT_ID,
+        audience: clientId,
       });
 
       const payload = ticket.getPayload();
@@ -101,7 +106,11 @@ export class AuthService {
         sub: payload.sub,
       };
     } catch (error) {
-      throw new UnauthorizedException("Invalid Google token");
+      console.error('Google Token Verification Error:', error.message);
+      if (clientId) {
+        console.error('Audience used:', clientId);
+      }
+      throw new UnauthorizedException(`Invalid Google token: ${error.message}`);
     }
   }
 
