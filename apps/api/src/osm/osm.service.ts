@@ -37,17 +37,50 @@ export class OsmService {
 
     async findNearbyActivities(lat: number, lon: number, radius: number = 1000): Promise<Activity[]> {
         const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:60][maxsize:20000000];
       (
         node["leisure"](around:${radius},${lat},${lon});
         way["leisure"](around:${radius},${lat},${lon});
         relation["leisure"](around:${radius},${lat},${lon});
+        
         node["tourism"](around:${radius},${lat},${lon});
         way["tourism"](around:${radius},${lat},${lon});
         relation["tourism"](around:${radius},${lat},${lon});
+        
+        node["sport"](around:${radius},${lat},${lon});
+        way["sport"](around:${radius},${lat},${lon});
+        
+        node["historic"](around:${radius},${lat},${lon});
+        way["historic"](around:${radius},${lat},${lon});
+        
+        node["man_made"](around:${radius},${lat},${lon});
+        way["man_made"](around:${radius},${lat},${lon});
+
+        node["military"](around:${radius},${lat},${lon});
+        way["military"](around:${radius},${lat},${lon});
+
+        node["club"](around:${radius},${lat},${lon});
+        node["craft"](around:${radius},${lat},${lon});
+        
+        node["natural"="peak"](around:${radius},${lat},${lon});
+        node["natural"="beach"](around:${radius},${lat},${lon});
+        node["natural"="volcano"](around:${radius},${lat},${lon});
+        node["natural"="cave_entrance"](around:${radius},${lat},${lon});
+        node["waterway"="waterfall"](around:${radius},${lat},${lon});
+
         node["amenity"="restaurant"](around:${radius},${lat},${lon});
         node["amenity"="cafe"](around:${radius},${lat},${lon});
         node["amenity"="bar"](around:${radius},${lat},${lon});
+        node["amenity"="pub"](around:${radius},${lat},${lon});
+        node["amenity"="cinema"](around:${radius},${lat},${lon});
+        node["amenity"="theatre"](around:${radius},${lat},${lon});
+        node["amenity"="nightclub"](around:${radius},${lat},${lon});
+        node["amenity"="casino"](around:${radius},${lat},${lon});
+        node["amenity"="stripclub"](around:${radius},${lat},${lon});
+        node["amenity"="brothel"](around:${radius},${lat},${lon});
+        node["amenity"="arts_centre"](around:${radius},${lat},${lon});
+        node["amenity"="planetarium"](around:${radius},${lat},${lon});
+        node["amenity"="place_of_worship"](around:${radius},${lat},${lon});
       );
       out center;
     `;
@@ -89,6 +122,14 @@ export class OsmService {
                 if (el.tags?.tourism) category = 'tourism';
                 else if (el.tags?.leisure) category = 'leisure';
                 else if (el.tags?.amenity) category = 'amenity';
+                else if (el.tags?.sport) category = 'sport';
+                else if (el.tags?.historic) category = 'historic';
+                else if (el.tags?.natural) category = 'natural';
+                else if (el.tags?.waterway) category = 'waterway';
+                else if (el.tags?.man_made) category = 'man_made';
+                else if (el.tags?.military) category = 'military';
+                else if (el.tags?.club) category = 'club';
+                else if (el.tags?.craft) category = 'craft';
 
                 const type = el.tags?.[category] || 'unknown';
                 const name = el.tags?.name || `${category} - ${type}`; // Fallback name if missing

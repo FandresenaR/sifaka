@@ -77,7 +77,7 @@ export default function ProjectDashboard() {
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [radius, setRadius] = useState(3000) // Default 3km for OSM
-  const [activityTypes, setActivityTypes] = useState<string[]>(['restaurant', 'park', 'cafe'])
+  const [activityTypes, setActivityTypes] = useState<string[]>(['restaurant', 'park', 'cafe', 'sport', 'historic', 'natural', 'waterway', 'man_made', 'military', 'club', 'amenity'])
 
   // Charger les données du projet
   useEffect(() => {
@@ -636,16 +636,27 @@ function MapActivityView({
                 Types:
               </label>
               <div className="space-y-2">
-                {['restaurant', 'park', 'cafe', 'museum', 'cinema'].map((type) => (
+                {['restaurant', 'park', 'cafe', 'museum', 'cinema', 'sport', 'historic', 'nature', 'extreme', 'other'].map((type) => (
                   <label key={type} className="flex items-center gap-2">
                     <input
                       type="checkbox"
-                      checked={activityTypes.includes(type)}
+                      checked={activityTypes.includes(type) ||
+                        (type === 'nature' && (activityTypes.includes('natural') || activityTypes.includes('waterway'))) ||
+                        (type === 'extreme' && (activityTypes.includes('man_made') || activityTypes.includes('military') || activityTypes.includes('club')))
+                      }
                       onChange={(e) => {
-                        if (e.target.checked) {
-                          onSetActivityTypes([...activityTypes, type])
+                        if (type === 'nature') {
+                          if (e.target.checked) onSetActivityTypes([...activityTypes, 'natural', 'waterway', 'peak', 'beach']);
+                          else onSetActivityTypes(activityTypes.filter((t: string) => !['natural', 'waterway', 'peak', 'beach'].includes(t)));
+                        } else if (type === 'extreme') {
+                          if (e.target.checked) onSetActivityTypes([...activityTypes, 'man_made', 'military', 'club']);
+                          else onSetActivityTypes(activityTypes.filter((t: string) => !['man_made', 'military', 'club'].includes(t)));
                         } else {
-                          onSetActivityTypes(activityTypes.filter((t: string) => t !== type))
+                          if (e.target.checked) {
+                            onSetActivityTypes([...activityTypes, type])
+                          } else {
+                            onSetActivityTypes(activityTypes.filter((t: string) => t !== type))
+                          }
                         }
                       }}
                       className="w-4 h-4"
