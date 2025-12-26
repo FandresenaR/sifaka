@@ -575,10 +575,104 @@ function MapActivityView({
     }
   }));
 
+  // --- Pagination & Persistence Logic ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+  const totalPages = Math.ceil(activities.length / itemsPerPage);
+
+  const paginatedActivities = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return activities.slice(start, start + itemsPerPage);
+  }, [activities, currentPage]);
+
+  const [saving, setSaving] = useState(false);
+  const handleSaveActivities = async () => {
+    try {
+      setSaving(true);
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, ''); // Remove trailing slash if any, ensuring cleanliness
+      const normalizedUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+
+      const res = await fetch(`${normalizedUrl}/activities/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is passed if using manual fetch, though custom hooks might handle this better. 
+          // Note: In this project context, Auth might be handled via cookies or specific header injection globally. 
+          // If this fails, we might need to rely on the standard fetch wrapper if one exists.
+          // Assuming standard headers or browser cookies are set.
+        },
+        body: JSON.stringify(activities)
+      });
+
+      if (!res.ok) throw new Error('Failed to save');
+      const data = await res.json();
+      alert(`Succès: ${data.count} nouvelles activités sauvegardées !`); // Simple feedback for now
+    } catch (err) {
+      console.error('Save error', err);
+      setError('Erreur lors de la sauvegarde');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const [shuffling, setShuffling] = useState(false);
+  const [shuffledActivity, setShuffledActivity] = useState<Activity | null>(null);
+
+  const handleShuffle = async () => {
+    try {
+      setShuffling(true);
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
+      const normalizedUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+
+      const res = await fetch(`${normalizedUrl}/activities/shuffle`);
+      if (!res.ok) throw new Error('Shuffle failed');
+
+      const data = await res.json();
+      if (data) {
+        const mapped: Activity = {
+          placeId: data.osmId,
+          name: data.name,
+          address: data.address || `${data.category} - ${data.type}`,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          distance: 0,
+          type: data.type,
+          rating: 0,
+          website: data.website,
+          phone: data.phone,
+          opening_hours: data.opening_hours
+        };
+        setShuffledActivity(mapped);
+        setLocation({ latitude: mapped.latitude, longitude: mapped.longitude, accuracy: 0 }); // Center map on result
+      } else {
+        alert("Aucune activité sauvegardée pour le shuffle !");
+      }
+    } catch (err) {
+      console.error('Shuffle error', err);
+      setError('Erreur lors du shuffle');
+    } finally {
+      setShuffling(false);
+    }
+  };
+
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Contrôles */}
       <div className="space-y-6">
+        {/* Shuffle Mode Call to Action */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-6 shadow-lg text-white">
+          <h3 className="text-xl font-bold mb-2">⚡ ShuffleLife</h3>
+          <p className="text-sm opacity-90 mb-4">Laissez le hasard décider de votre prochaine aventure parmi vos favoris.</p>
+          <button
+            onClick={handleShuffle}
+            disabled={shuffling}
+            className="w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded border border-white/40 font-semibold transition-all"
+          >
+            {shuffling ? 'Mélange en cours...' : '🎲 J\'ai de la chance'}
+          </button>
+        </div>
+
         {/* Localisation */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -613,7 +707,7 @@ function MapActivityView({
 
         {/* Paramètres */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paramètres</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paramètres de recherche</h3>
 
           <div className="space-y-4">
             <div>
@@ -674,6 +768,17 @@ function MapActivityView({
             >
               {searching ? 'Recherche...' : 'Découvrir'}
             </button>
+
+            {/* Save Button */}
+            {activities.length > 0 && (
+              <button
+                onClick={handleSaveActivities}
+                disabled={saving}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium flex items-center justify-center gap-2"
+              >
+                {saving ? 'Sauvegarde...' : `Sauvegarder ${activities.length} activités`}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -684,6 +789,29 @@ function MapActivityView({
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
+        {shuffledActivity && (
+          <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6 mb-6">
+            <h4 className="text-lg font-bold text-purple-900 dark:text-purple-100 mb-2">🎉 La sélection ShuffleLife !</h4>
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold">{shuffledActivity.name}</h3>
+                <p className="text-gray-600 dark:text-gray-300">{shuffledActivity.address}</p>
+                <div className="flex gap-3 mt-3">
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${shuffledActivity.latitude},${shuffledActivity.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium flex items-center gap-2"
+                  >
+                    <MapIcon className="w-4 h-4" />
+                    Go !
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -699,12 +827,13 @@ function MapActivityView({
         {/* Activités */}
         {activities.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Activités trouvées ({activities.length})
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex justify-between items-center">
+              <span>Activités trouvées ({activities.length})</span>
+              <span className="text-sm font-normal text-gray-500">Page {currentPage} / {totalPages}</span>
             </h3>
 
             <div className="space-y-3">
-              {activities.slice(0, 10).map((activity: Activity, index: number) => (
+              {paginatedActivities.map((activity: Activity, index: number) => (
                 <div
                   key={activity.placeId || `activity-${index}`}
                   className="flex items-start justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50"
@@ -755,11 +884,5 @@ function MapActivityView({
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-
-      </div>
-    </div>
-  )
+            )
 }

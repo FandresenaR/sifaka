@@ -1,4 +1,4 @@
-import { Controller, Get, Query, ParseFloatPipe, DefaultValuePipe, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, ParseFloatPipe, DefaultValuePipe, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { OsmService, Activity } from './osm.service';
@@ -28,6 +28,35 @@ export class OsmController {
         );
 
         return this.osmService.findNearbyActivities(lat, lon, radius);
+    }
+
+    @Post('save')
+    async saveActivities(
+        @CurrentUser() user: User,
+        @Body() activities: any[],
+    ) {
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+        }
+
+        const savedCount = await this.osmService.saveActivities(user.id, activities);
+        return { message: 'Activities saved', count: savedCount };
+    }
+
+    @Get('saved')
+    async getSavedActivities(@CurrentUser() user: User) {
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+        }
+        return this.osmService.getSavedActivities(user.id);
+    }
+
+    @Get('shuffle')
+    async shuffleActivity(@CurrentUser() user: User) {
+        if (!user) {
+            throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+        }
+        return this.osmService.shuffleActivity(user.id);
     }
 
     private async logSearch(lat: number, lon: number, radius: number, userId?: string) {

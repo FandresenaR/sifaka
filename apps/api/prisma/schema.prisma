@@ -285,3 +285,54 @@ model SearchLog {
   @@index([userId])
   @@index([createdAt])
 }
+
+// ============================================
+// SAVED ACTIVITIES (ShuffleLife)
+// ============================================
+
+model SavedActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  osmId     String
+  name      String
+  type      String
+  category  String
+  latitude  Float
+  longitude Float
+  address   String?
+  website   String?
+  phone     String?
+  opening_hours String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([category])
+}
+
+// ============================================
+// GLOBAL PLACES CACHE
+// ============================================
+
+model Place {
+  id            String   @id @default(cuid())
+  osmId         String   @unique
+  name          String
+  type          String
+  category      String
+  latitude      Float
+  longitude     Float
+  address       String?
+  website       String?
+  phone         String?
+  opening_hours String?
+  tags          Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([type])
+  @@index([category])
+}

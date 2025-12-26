@@ -30,12 +30,63 @@ export interface Activity {
     };
 }
 
+import { PrismaService } from '../prisma/prisma.service';
+
 @Injectable()
 export class OsmService {
     private readonly logger = new Logger(OsmService.name);
     private readonly OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
 
+    constructor(private prisma: PrismaService) { }
+
     async findNearbyActivities(lat: number, lon: number, radius: number = 1000): Promise<Activity[]> {
+        // 1. Check for recent cached searches in this area
+        const cachedSearch = await this.prisma.searchLog.findFirst({
+            where: {
+                latitude: {
+                    gte: lat - 0.01, // Approx 1km lat
+                    lte: lat + 0.01
+                },
+                longitude: {
+                    gte: lon - 0.01,
+                    lte: lon + 0.01
+                },
+                radius: {
+                    gte: radius * 0.8 // If we have a search with similar or larger radius
+                },
+                createdAt: {
+                    gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) // Last 30 days
+                }
+            }
+        });
+
+        if (cachedSearch) {
+            this.logger.log('Cache hit! Fetching from DB.');
+            // Fetch from Place table
+            const places = await this.prisma.place.findMany({
+                where: {
+                    // Simple bounding box approximation for "nearby" in DB
+                    latitude: { gte: lat - (radius / 111000), lte: lat + (radius / 111000) },
+                    longitude: { gte: lon - (radius / (111000 * Math.cos(lat * Math.PI / 180))), lte: lon + (radius / (111000 * Math.cos(lat * Math.PI / 180))) }
+                }
+            });
+
+            if (places.length > 0) {
+                return places.map(p => ({
+                    id: p.osmId,
+                    name: p.name,
+                    category: p.category,
+                    type: p.type,
+                    location: { lat: p.latitude, lon: p.longitude },
+                    tags: (p.tags as any) || {},
+                    website: p.website || undefined,
+                    phone: p.phone || undefined,
+                    opening_hours: p.opening_hours || undefined,
+                    address: p.address ? { street: p.address } : undefined // Simplified
+                }));
+            }
+        }
+
         const query = `
       [out:json][timeout:60][maxsize:20000000];
       (
@@ -92,23 +143,79 @@ export class OsmService {
             });
 
             if (!response.data || !response.data.elements) {
-                this.logger.warn('No data returned from Overpass API');
                 return [];
             }
 
-            return this.transformData(response.data.elements);
+            const results = this.transformData(response.data.elements);
+
+            // Async Cache (do not block)
+            this.cacheResults(results).catch(err => this.logger.error('Cache error', err));
+
+            return results;
         } catch (error) {
-            this.logger.error('Error fetching data from Overpass API', error);
+            this.logger.error('Error fetching from Overpass API', error.message);
+            // Fallback to cache even if no search log?
+            // For now, just throw or return empty
             throw new HttpException(
-                {
-                    status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'Overpass API Error',
-                    message: error.message,
-                    details: error.response?.data || 'No details',
-                },
+                'Failed to fetch nearby activities',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
+    }
+
+    async saveActivities(userId: string, activities: Activity[]): Promise<number> {
+        let count = 0;
+        for (const act of activities) {
+            try {
+                // Avoid duplicates by checking osmId + userId combination
+                const existing = await this.prisma.savedActivity.findFirst({
+                    where: { userId, osmId: act.id }
+                });
+
+                if (!existing) {
+                    await this.prisma.savedActivity.create({
+                        data: {
+                            userId,
+                            osmId: act.id,
+                            name: act.name,
+                            type: act.type,
+                            category: act.category,
+                            latitude: act.location.lat,
+                            longitude: act.location.lon,
+                            address: [act.address?.housenumber, act.address?.street, act.address?.city].filter(Boolean).join(' ') || null,
+                            website: act.website || null,
+                            phone: act.phone || null,
+                            opening_hours: act.opening_hours || null
+                        }
+                    });
+                    count++;
+                }
+            } catch (error) {
+                this.logger.error(`Failed to save activity ${act.id}`, error);
+            }
+        }
+        return count;
+    }
+
+    async getSavedActivities(userId: string) {
+        return this.prisma.savedActivity.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async shuffleActivity(userId: string) {
+        const count = await this.prisma.savedActivity.count({
+            where: { userId }
+        });
+
+        if (count === 0) return null;
+
+        const skip = Math.floor(Math.random() * count);
+        return this.prisma.savedActivity.findFirst({
+            where: { userId },
+            skip: skip
+        });
     }
 
     private transformData(elements: OverpassElement[]): Activity[] {
