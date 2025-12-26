@@ -139,26 +139,37 @@ export class AuthService {
    * Récupère l'utilisateur à partir du token
    */
   async getUserFromToken(token: string) {
-    const payload = this.verifyToken(token);
+    try {
+      // 1. Try to verify as standard API JWT
+      const payload = this.verifyToken(token);
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        role: true,
-        createdAt: true,
-        lastLoginAt: true,
-      },
-    });
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+      });
 
-    if (!user) {
-      throw new UnauthorizedException("User not found");
+      if (user) return user;
+    } catch (jwtError) {
+      // 2. If valid JWT but user not found, or invalid JWT, try Google ID Token
     }
 
-    return user;
+    // 3. Try to verify as Google ID Token (from NextAuth session)
+    try {
+      const googleUser = await this.verifyGoogleToken(token);
+
+      const user = await this.prisma.user.findUnique({
+        where: { email: googleUser.email },
+      });
+
+      if (user) return user;
+
+      // Optional: Auto-create if not found (though NextAuth adapter should have handled it)
+      // For safety, we can throw specific error if not found
+    } catch (googleError) {
+      // Both checks failed
+      throw new UnauthorizedException("Invalid token (neither JWT nor Google ID Token)");
+    }
+
+    throw new UnauthorizedException("User not found");
   }
 
   /**
