@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import Map from '../../../../../components/map/Map'
 import {
   ArrowLeft,
@@ -567,6 +568,8 @@ function MapActivityView({
   setError,
   setLocation,
 }: any) {
+  const { data: session } = useSession();
+
   // Map internal Activity to component format expected by Map component
   const mappedActivitiesForMap = (activities || []).map((act: any) => ({
     id: act.placeId,
@@ -592,30 +595,49 @@ function MapActivityView({
   const [saving, setSaving] = useState(false);
   const handleSaveActivities = async () => {
     try {
+      if (!session?.user?.id_token) {
+        throw new Error('Vous devez être connecté pour sauvegarder.');
+      }
+
       setSaving(true);
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, ''); // Remove trailing slash if any, ensuring cleanliness
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/$/, '');
       const normalizedUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
 
-      const res = await fetch(`${normalizedUrl}/activities/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(activities)
-      });
+      // Batch requests to avoid 413 Payload Too Large
+      const BATCH_SIZE = 50;
+      let savedCount = 0;
+      const total = activities.length;
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error('Save failed:', res.status, res.statusText, errorText);
-        throw new Error(`Failed to save: ${res.status} ${res.statusText} - ${errorText}`);
+      for (let i = 0; i < total; i += BATCH_SIZE) {
+        const batch = activities.slice(i, i + BATCH_SIZE);
+        const res = await fetch(`${normalizedUrl}/activities/save`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.user.id_token}`
+          },
+          body: JSON.stringify(batch)
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          // If one batch fails, we log it but maybe continue or stop? 
+          // Creating a warning but continuing to try to save the rest is safer/better UX for "partial success"
+          console.error(`Batch ${i / BATCH_SIZE + 1} failed:`, res.status, errorText);
+        } else {
+          const data = await res.json();
+          savedCount += data.count || 0;
+        }
       }
-      const data = await res.json();
-      alert(`Succès: ${data.count} nouvelles activités sauvegardées !`);
-    } catch (err) {
+
+      if (savedCount > 0) {
+        alert(`Succès: ${savedCount} activités sauvegardées (sur ${total}) !`);
+      } else {
+        throw new Error('Aucune activité n\'a pu être sauvegardée.');
+      }
+
+    } catch (err: any) {
       console.error('Save error details:', err);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       setError(`Erreur lors de la sauvegarde: ${err.message}`);
     } finally {
       setSaving(false);
