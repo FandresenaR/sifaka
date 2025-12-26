@@ -263,14 +263,14 @@ export class OsmService {
 
     private async cacheResults(activities: Activity[]) {
         if (activities.length === 0) return;
+        this.logger.log(`Starting cache update for ${activities.length} activities...`);
 
+        let count = 0;
         for (const act of activities) {
             try {
                 await this.prisma.place.upsert({
                     where: { osmId: act.id },
-                    update: {
-                        updatedAt: new Date()
-                    },
+                    update: { updatedAt: new Date() },
                     create: {
                         osmId: act.id,
                         name: act.name,
@@ -285,11 +285,15 @@ export class OsmService {
                         tags: act.tags
                     }
                 });
+                count++;
+                if (count % 50 === 0) {
+                    this.logger.log(`Cached ${count}/${activities.length} activities...`);
+                }
             } catch (err) {
-                // ignore individual insert errors to prevent blocking the flow
                 console.error(`Cache insert failed for ${act.id}:`, err.message);
             }
         }
+        this.logger.log(`Finished caching activities. Total: ${count}`);
     }
 }
 
