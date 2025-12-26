@@ -259,4 +259,34 @@ export class OsmService {
                 };
             });
     }
+
+    private async cacheResults(activities: Activity[]) {
+        if (activities.length === 0) return;
+
+        for (const act of activities) {
+            try {
+                await this.prisma.place.upsert({
+                    where: { osmId: act.id },
+                    update: {
+                        updatedAt: new Date()
+                    },
+                    create: {
+                        osmId: act.id,
+                        name: act.name,
+                        type: act.type,
+                        category: act.category,
+                        latitude: act.location.lat,
+                        longitude: act.location.lon,
+                        address: [act.address?.housenumber, act.address?.street, act.address?.city].filter(Boolean).join(' ') || null,
+                        website: act.website || null,
+                        phone: act.phone || null,
+                        opening_hours: act.opening_hours || null,
+                        tags: act.tags
+                    }
+                });
+            } catch (err) {
+                // ignore individual insert errors to prevent blocking the flow
+            }
+        }
+    }
 }

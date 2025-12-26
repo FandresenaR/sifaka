@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Map from '../../../../../components/map/Map'
@@ -349,6 +349,8 @@ export default function ProjectDashboard() {
             onSetActivityTypes={setActivityTypes}
             onToggleFavorite={toggleFavorite}
             mapRef={mapRef}
+            setError={setError}
+            setLocation={setLocation}
           />
         )
       default:
@@ -562,6 +564,8 @@ function MapActivityView({
   onSetActivityTypes,
   onToggleFavorite,
   mapRef,
+  setError,
+  setLocation,
 }: any) {
   // Map internal Activity to component format expected by Map component
   const mappedActivitiesForMap = (activities || []).map((act: any) => ({
@@ -596,20 +600,23 @@ function MapActivityView({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token is passed if using manual fetch, though custom hooks might handle this better. 
-          // Note: In this project context, Auth might be handled via cookies or specific header injection globally. 
-          // If this fails, we might need to rely on the standard fetch wrapper if one exists.
-          // Assuming standard headers or browser cookies are set.
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(activities)
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Save failed:', res.status, res.statusText, errorText);
+        throw new Error(`Failed to save: ${res.status} ${res.statusText} - ${errorText}`);
+      }
       const data = await res.json();
-      alert(`Succès: ${data.count} nouvelles activités sauvegardées !`); // Simple feedback for now
+      alert(`Succès: ${data.count} nouvelles activités sauvegardées !`);
     } catch (err) {
-      console.error('Save error', err);
-      setError('Erreur lors de la sauvegarde');
+      console.error('Save error details:', err);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setError(`Erreur lors de la sauvegarde: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -884,5 +891,45 @@ function MapActivityView({
                 </div>
               ))}
             </div>
-            )
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-6">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Précédent
+                </button>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let p = currentPage - 2 + i;
+                  if (currentPage < 3) p = 1 + i;
+                  if (p > totalPages) return null;
+                  if (p < 1) return null;
+
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`px-3 py-1 rounded border ${currentPage === p ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'}`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Suivant
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
