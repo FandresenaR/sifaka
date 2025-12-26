@@ -8,6 +8,7 @@ import { AuthModule, AuthGuard, RolesGuard } from "./auth";
 import { ProjectsModule } from "./projects/projects.module";
 import { TasksModule } from "./tasks/tasks.module";
 import { ClientsModule } from "./clients/clients.module";
+import { OsmModule } from "./osm/osm.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ClientsModule } from "./clients/clients.module";
     ProjectsModule,
     TasksModule,
     ClientsModule,
+    OsmModule,
   ],
   controllers: [AppController],
   providers: [
@@ -33,4 +35,4 @@ import { ClientsModule } from "./clients/clients.module";
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

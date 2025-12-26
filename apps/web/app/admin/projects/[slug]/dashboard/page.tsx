@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Map from '../../../../../components/map/Map'
 import {
   ArrowLeft,
   MapPin,
   Users,
   Heart,
-  Map,
+  Map as MapIcon,
   AlertCircle,
   Loader,
   Settings,
@@ -16,6 +17,7 @@ import {
   Zap
 } from 'lucide-react'
 
+// ... interfaces ...
 interface Module {
   id: string
   displayName: string
@@ -59,7 +61,6 @@ export default function ProjectDashboard() {
   const params = useParams()
   const slug = params.slug as string
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
 
   // État
   const [project, setProject] = useState<Project | null>(null)
@@ -72,7 +73,7 @@ export default function ProjectDashboard() {
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [radius, setRadius] = useState(50)
+  const [radius, setRadius] = useState(1000) // Default 1km for OSM
   const [activityTypes, setActivityTypes] = useState<string[]>(['restaurant', 'park', 'cafe'])
 
   // Charger les données du projet
@@ -82,26 +83,6 @@ export default function ProjectDashboard() {
     loadUsers()
     loadFavorites()
   }, [slug])
-
-  // Charger Google Maps
-  useEffect(() => {
-    const loadGoogleMaps = () => {
-      // Check if global object exists
-      if ((window as any).google) return
-
-      // Check if script is already in DOM to prevent duplicate injection in Strict Mode
-      const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')
-      if (existingScript) return
-
-      const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&libraries=places`
-      script.async = true
-      script.defer = true
-      document.head.appendChild(script)
-    }
-
-    loadGoogleMaps()
-  }, [])
 
   const loadProject = async () => {
     try {
@@ -221,67 +202,37 @@ export default function ProjectDashboard() {
       setSearching(true)
       setError(null)
 
-      const res = await fetch('/api/shuffle-life/activities/discover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          radius,
-          activityTypes,
-          limit: 50,
-        }),
-      })
+      // Use logic similar to useActivities hook, but adjusted for the dashboard structure
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+      const res = await fetch(`${API_URL}/activities/nearby?lat=${location.latitude}&lon=${location.longitude}&radius=${radius}`)
 
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.error || 'Erreur recherche')
       }
 
-      const data = await res.json()
-      setActivities(data.activities || [])
+      const rawActivities = await res.json()
 
-      // Initialiser la carte
-      setTimeout(() => {
-        if (location && mapRef.current && (window as any).google && !mapInstanceRef.current) {
-          initializeMap(data.activities || [])
-        }
-      }, 500)
+      // Transform backend OSM activities to Dashboard Activity interface
+      const mappedActivities: Activity[] = rawActivities.map((act: any) => ({
+        placeId: act.id,
+        name: act.name,
+        address: `${act.category} - ${act.type}`, // Construct a simple address/type string
+        latitude: act.location.lat,
+        longitude: act.location.lon,
+        distance: 0, // Need to calculate or omit
+        type: act.type,
+        rating: 0
+      }));
+
+      setActivities(mappedActivities)
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setSearching(false)
     }
-  }
-
-  const initializeMap = (mapActivities: Activity[]) => {
-    if (!(window as any).google || !location) return
-
-    const { google } = window as any
-    const map = new google.maps.Map(mapRef.current, {
-      zoom: 13,
-      center: { lat: location.latitude, lng: location.longitude },
-      styles: [{ featureType: 'all', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] }],
-    })
-
-    mapInstanceRef.current = map
-
-    // Marqueur utilisateur
-    new google.maps.Marker({
-      position: { lat: location.latitude, lng: location.longitude },
-      map,
-      title: 'Votre position',
-      icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-    })
-
-    // Marqueurs activités
-    mapActivities.forEach((activity) => {
-      new google.maps.Marker({
-        position: { lat: activity.latitude, lng: activity.longitude },
-        map,
-        title: activity.name,
-      })
-    })
   }
 
   const toggleFavorite = async (activity: Activity) => {
@@ -315,7 +266,7 @@ export default function ProjectDashboard() {
         return <Users className="w-4 h-4" />
       case 'MapDisplay':
       case 'WebActivitySearch':
-        return <Map className="w-4 h-4" />
+        return <MapIcon className="w-4 h-4" />
       case 'AIActivityDiscovery':
         return <Heart className="w-4 h-4" />
       case 'IPGeolocation':
@@ -427,8 +378,8 @@ export default function ProjectDashboard() {
             <button
               onClick={() => setActiveTab('overview')}
               className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === 'overview'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
             >
               Aperçu
@@ -441,8 +392,8 @@ export default function ProjectDashboard() {
                   key={module.id}
                   onClick={() => setActiveTab(module.moduleName)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === module.moduleName
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
                     }`}
                 >
                   {getModuleIcon(module.moduleName)}
@@ -580,6 +531,18 @@ function MapActivityView({
   onToggleFavorite,
   mapRef,
 }: any) {
+  // Map internal Activity to component format expected by Map component
+  const mappedActivitiesForMap = (activities || []).map((act: any) => ({
+    id: act.placeId,
+    name: act.name,
+    category: act.type || 'unknown',
+    type: act.type || 'unknown',
+    location: {
+      lat: act.latitude,
+      lon: act.longitude
+    }
+  }));
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Contrôles */}
@@ -622,12 +585,13 @@ function MapActivityView({
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Rayon: {radius} km
+                  Rayon: {radius} m
                 </label>
                 <input
                   type="range"
-                  min="1"
-                  max="500"
+                  min="500"
+                  max="5000"
+                  step="100"
                   value={radius}
                   onChange={(e) => onSetRadius(Number(e.target.value))}
                   className="w-full"
@@ -682,11 +646,12 @@ function MapActivityView({
 
         {/* Carte */}
         {location && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Carte</h3>
-            </div>
-            <div ref={mapRef} className="w-full h-96 bg-gray-100 dark:bg-gray-700" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden h-96 relative z-0">
+            <Map
+              center={[location.latitude, location.longitude]}
+              zoom={14}
+              activities={mappedActivitiesForMap}
+            />
           </div>
         )}
 
@@ -707,8 +672,8 @@ function MapActivityView({
                     <h4 className="font-semibold text-gray-900 dark:text-white">{activity.name}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{activity.address}</p>
                     <div className="flex gap-4 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                      {activity.rating && <span>⭐ {activity.rating.toFixed(1)}/5</span>}
-                      <span>📍 {activity.distance.toFixed(1)} km</span>
+                      {activity.rating > 0 && <span>⭐ {activity.rating?.toFixed(1)}/5</span>}
+                      <span>📍 {activity.type}</span>
                     </div>
                   </div>
                   <button
@@ -717,8 +682,8 @@ function MapActivityView({
                   >
                     <Heart
                       className={`w-5 h-5 ${favorites.includes(activity.placeId)
-                          ? 'fill-red-500 text-red-500'
-                          : 'text-gray-400 hover:text-red-500'
+                        ? 'fill-red-500 text-red-500'
+                        : 'text-gray-400 hover:text-red-500'
                         }`}
                     />
                   </button>

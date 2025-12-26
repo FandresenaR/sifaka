@@ -34,6 +34,7 @@ model User {
   comments      TaskComment[]
   clients       Client[]
   activities    Activity[]
+  searchLogs    SearchLog[]
 
   @@index([email])
   @@index([supabaseId])
@@ -264,4 +265,23 @@ enum ActivityType {
   ASSIGNED
   STATUS_CHANGED
   COMPLETED
+}
+
+// ============================================
+// SEARCH LOGS
+// ============================================
+
+model SearchLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  latitude  Float
+  longitude Float
+  radius    Int
+  filters   Json?    // Stores selected activity types
+  createdAt DateTime @default(now())
+  
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
 }
