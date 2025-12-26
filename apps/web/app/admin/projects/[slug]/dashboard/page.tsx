@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { 
+import {
   ArrowLeft,
   MapPin,
   Users,
@@ -86,10 +86,15 @@ export default function ProjectDashboard() {
   // Charger Google Maps
   useEffect(() => {
     const loadGoogleMaps = () => {
-      if ((window as any).google) return // Déjà chargé
+      // Check if global object exists
+      if ((window as any).google) return
+
+      // Check if script is already in DOM to prevent duplicate injection in Strict Mode
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]')
+      if (existingScript) return
 
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}&libraries=places`
       script.async = true
       script.defer = true
       document.head.appendChild(script)
@@ -108,22 +113,22 @@ export default function ProjectDashboard() {
           setProject(foundProject)
         } else {
           // Fallback si pas trouvé
-          setProject({ 
-            id: slug, 
+          setProject({
+            id: slug,
             name: slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '),
-            slug, 
-            description: 'Projet' 
+            slug,
+            description: 'Projet'
           })
         }
       }
     } catch (err) {
       console.error('Erreur chargement projet:', err)
       // Fallback
-      setProject({ 
-        id: slug, 
+      setProject({
+        id: slug,
         name: slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' '),
-        slug, 
-        description: 'Projet' 
+        slug,
+        description: 'Projet'
       })
     }
   }
@@ -141,7 +146,7 @@ export default function ProjectDashboard() {
           enabled: pm.enabled,
         }))
         setModules(installedModules)
-        
+
         // Définir le premier module actif comme tab par défaut
         const firstEnabled = installedModules.find((m: any) => m.enabled)
         if (firstEnabled) {
@@ -421,11 +426,10 @@ export default function ProjectDashboard() {
           <div className="flex gap-2 overflow-x-auto pb-2">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'overview'
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === 'overview'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
+                }`}
             >
               Aperçu
             </button>
@@ -436,11 +440,10 @@ export default function ProjectDashboard() {
                 <button
                   key={module.id}
                   onClick={() => setActiveTab(module.moduleName)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                    activeTab === module.moduleName
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === module.moduleName
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {getModuleIcon(module.moduleName)}
                   {getModuleLabel(module.moduleName)}
@@ -713,11 +716,10 @@ function MapActivityView({
                     className="ml-4 flex-shrink-0"
                   >
                     <Heart
-                      className={`w-5 h-5 ${
-                        favorites.includes(activity.placeId)
+                      className={`w-5 h-5 ${favorites.includes(activity.placeId)
                           ? 'fill-red-500 text-red-500'
                           : 'text-gray-400 hover:text-red-500'
-                      }`}
+                        }`}
                     />
                   </button>
                 </div>
