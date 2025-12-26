@@ -184,7 +184,8 @@ export default function ProjectDashboard() {
           setError(null)
         },
         (err) => {
-          setError(`Erreur géolocalisation: ${err.message}`)
+          console.error('Geolocation error:', err);
+          setError(`Erreur géolocalisation (${err.code}): ${err.message || 'Unknown error'}`)
         }
       )
     } catch (err) {
@@ -193,9 +194,14 @@ export default function ProjectDashboard() {
   }
 
   const searchActivities = async () => {
+    let searchLat = location?.latitude || -18.8792;
+    let searchLon = location?.longitude || 47.5079;
+
+    // Auto-set location if not set (optional, just for search context)
     if (!location) {
-      setError('Veuillez obtenir votre localisation')
-      return
+      // We can just proceed with defaults, or explicitly set location state.
+      // For now, let's just search with these coords.
+      setError('Using default location (Antananarivo) since geolocation is unavailable.');
     }
 
     try {
@@ -205,7 +211,7 @@ export default function ProjectDashboard() {
       // Use logic similar to useActivities hook, but adjusted for the dashboard structure
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-      const res = await fetch(`${API_URL}/activities/nearby?lat=${location.latitude}&lon=${location.longitude}&radius=${radius}`)
+      const res = await fetch(`${API_URL}/activities/nearby?lat=${searchLat}&lon=${searchLon}&radius=${radius}`)
 
       if (!res.ok) {
         const data = await res.json()
@@ -578,61 +584,59 @@ function MapActivityView({
         </div>
 
         {/* Paramètres */}
-        {location && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paramètres</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Paramètres</h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Rayon: {radius} m
-                </label>
-                <input
-                  type="range"
-                  min="500"
-                  max="5000"
-                  step="100"
-                  value={radius}
-                  onChange={(e) => onSetRadius(Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Types:
-                </label>
-                <div className="space-y-2">
-                  {['restaurant', 'park', 'cafe', 'museum', 'cinema'].map((type) => (
-                    <label key={type} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={activityTypes.includes(type)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            onSetActivityTypes([...activityTypes, type])
-                          } else {
-                            onSetActivityTypes(activityTypes.filter((t: string) => t !== type))
-                          }
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={onSearch}
-                disabled={searching}
-                className="w-full px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg font-medium"
-              >
-                {searching ? 'Recherche...' : 'Découvrir'}
-              </button>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Rayon: {radius} m
+              </label>
+              <input
+                type="range"
+                min="500"
+                max="5000"
+                step="100"
+                value={radius}
+                onChange={(e) => onSetRadius(Number(e.target.value))}
+                className="w-full"
+              />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                Types:
+              </label>
+              <div className="space-y-2">
+                {['restaurant', 'park', 'cafe', 'museum', 'cinema'].map((type) => (
+                  <label key={type} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={activityTypes.includes(type)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          onSetActivityTypes([...activityTypes, type])
+                        } else {
+                          onSetActivityTypes(activityTypes.filter((t: string) => t !== type))
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={onSearch} // This will need to handle !location case
+              disabled={searching}
+              className="w-full px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg font-medium"
+            >
+              {searching ? 'Recherche...' : 'Découvrir'}
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Contenu */}
@@ -645,15 +649,13 @@ function MapActivityView({
         )}
 
         {/* Carte */}
-        {location && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden h-96 relative z-0">
-            <Map
-              center={[location.latitude, location.longitude]}
-              zoom={14}
-              activities={mappedActivitiesForMap}
-            />
-          </div>
-        )}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden h-96 relative z-0">
+          <Map
+            center={location ? [location.latitude, location.longitude] : [-18.8792, 47.5079]} // Default to Antananarivo
+            zoom={14}
+            activities={mappedActivitiesForMap}
+          />
+        </div>
 
         {/* Activités */}
         {activities.length > 0 && (
@@ -693,12 +695,7 @@ function MapActivityView({
           </div>
         )}
 
-        {!location && (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">Commencez par obtenir votre localisation</p>
-          </div>
-        )}
+
       </div>
     </div>
   )
