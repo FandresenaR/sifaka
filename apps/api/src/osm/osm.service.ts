@@ -163,26 +163,42 @@ export class OsmService {
         }
     }
 
-    async saveActivities(userId: string, activities: Activity[]): Promise<number> {
+    async saveActivities(userId: string, activities: any[]): Promise<number> {
+        this.logger.log(`Attempting to save ${activities.length} activities for user ${userId}`);
+        if (activities.length > 0) {
+            this.logger.debug(`First activity structure: ${JSON.stringify(activities[0])}`);
+        }
+
         let count = 0;
         for (const act of activities) {
             try {
+                const osmId = act.id || act.placeId;
+                const lat = act.location?.lat ?? act.latitude;
+                const lon = act.location?.lon ?? act.longitude;
+
+                if (!osmId || lat === undefined || lon === undefined) {
+                    this.logger.warn(`Skipping invalid activity: ${JSON.stringify(act)}`);
+                    continue;
+                }
+
                 // Avoid duplicates by checking osmId + userId combination
                 const existing = await this.prisma.savedActivity.findFirst({
-                    where: { userId, osmId: act.id }
+                    where: { userId, osmId }
                 });
 
                 if (!existing) {
                     await this.prisma.savedActivity.create({
                         data: {
                             userId,
-                            osmId: act.id,
+                            osmId,
                             name: act.name,
-                            type: act.type,
-                            category: act.category,
-                            latitude: act.location.lat,
-                            longitude: act.location.lon,
-                            address: [act.address?.housenumber, act.address?.street, act.address?.city].filter(Boolean).join(' ') || null,
+                            type: act.type || 'unknown',
+                            category: act.category || 'other',
+                            latitude: lat,
+                            longitude: lon,
+                            address: act.address && typeof act.address === 'object'
+                                ? [act.address.housenumber, act.address.street, act.address.city].filter(Boolean).join(' ') || null
+                                : act.address || null,
                             website: act.website || null,
                             phone: act.phone || null,
                             opening_hours: act.opening_hours || null
@@ -191,10 +207,11 @@ export class OsmService {
                     count++;
                 }
             } catch (error) {
-                this.logger.error(`Failed to save activity ${act.id} for user ${userId}. Error: ${error.message}`, error.stack);
-                console.error('Full Save Error:', JSON.stringify(error, null, 2));
+                this.logger.error(`Failed to save activity ${act.id || act.placeId} for user ${userId}. Error: ${error.message}`);
+                console.error('Full Save Error details:', error);
             }
         }
+        this.logger.log(`Successfully saved ${count} new activities for user ${userId}`);
         return count;
     }
 
